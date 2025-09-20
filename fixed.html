@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suggested Fixed Code - CodeSage</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="gemini-integration.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .code-panel {
+            background: #2d2d2d;
+            border-radius: 12px;
+            border: 1px solid #404040;
+            font-family: 'Courier New', monospace;
+        }
+        .code-header {
+            background: #1a1a1a;
+            border-radius: 12px 12px 0 0;
+            border-bottom: 1px solid #404040;
+        }
+        .code-content {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .code-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        .code-content::-webkit-scrollbar-track {
+            background: #2d2d2d;
+        }
+        .code-content::-webkit-scrollbar-thumb {
+            background: #555;
+            border-radius: 4px;
+        }
+        .code-content::-webkit-scrollbar-thumb:hover {
+            background: #666;
+        }
+        .highlight-red {
+            background-color: rgba(239, 68, 68, 0.2);
+            border-left: 3px solid #ef4444;
+            padding-left: 8px;
+            margin-left: -8px;
+        }
+        .highlight-green {
+            background-color: rgba(34, 197, 94, 0.2);
+            border-left: 3px solid #22c55e;
+            padding-left: 8px;
+            margin-left: -8px;
+        }
+        .copy-btn {
+            transition: all 0.3s ease;
+        }
+        .copy-btn:hover {
+            transform: scale(1.05);
+        }
+        .copy-btn.copied {
+            background-color: #22c55e;
+            color: white;
+        }
+        pre[class*="language-"] {
+            margin: 0;
+            background: transparent;
+            border-radius: 0;
+        }
+        .comparison-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        @media (max-width: 768px) {
+            .comparison-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen">
+    <!-- Navigation -->
+    <nav class="glass-effect p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="text-white text-2xl font-bold">
+                <i class="fas fa-code mr-2"></i>CodeSage
+            </div>
+            <div class="hidden md:flex space-x-6">
+                <a href="index.html" class="text-white hover:text-gray-200 transition">Home</a>
+                <a href="review.html" class="text-white hover:text-gray-200 transition">Review</a>
+                <a href="about.html" class="text-white hover:text-gray-200 transition">About</a>
+                <a href="mentorship.html" class="text-white hover:text-gray-200 transition">Mentorship</a>
+            </div>
+            <div class="md:hidden">
+                <button id="mobile-menu-btn" class="text-white">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden mt-4 space-y-2">
+            <a href="index.html" class="block text-white hover:text-gray-200 py-2">Home</a>
+            <a href="review.html" class="block text-white hover:text-gray-200 py-2">Review</a>
+            <a href="about.html" class="block text-white hover:text-gray-200 py-2">About</a>
+            <a href="mentorship.html" class="block text-white hover:text-gray-200 py-2">Mentorship</a>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <!-- Back to Results Button -->
+        <div class="mb-8">
+            <a href="review.html" 
+               class="inline-flex items-center text-white hover:text-gray-200 transition transform hover:scale-105">
+                <i class="fas fa-arrow-left mr-2"></i>
+                Back to Review Results
+            </a>
+        </div>
+
+        <!-- Title Section -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">
+                Suggested Fixed Code
+            </h1>
+            <p class="text-white opacity-80 text-lg">
+                Compare your original code with the improved version
+            </p>
+        </div>
+
+        <!-- Issue Description -->
+        <div class="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-2xl p-6 mb-8 border border-white border-opacity-20">
+            <div class="flex items-center mb-4">
+                <div class="bg-yellow-100 p-2 rounded-full mr-3">
+                    <i class="fas fa-exclamation-triangle text-yellow-600"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-white">Issue Being Fixed</h3>
+            </div>
+            <p id="issue-description" class="text-white opacity-90">
+                Loading issue description...
+            </p>
+        </div>
+
+        <!-- Copy Fixed Code Button -->
+        <div class="text-center mb-8">
+            <button id="copy-btn" 
+                    class="copy-btn bg-green-600 text-white px-8 py-3 rounded-full font-semibold hover:bg-green-700 transition transform hover:scale-105 shadow-lg">
+                <i class="fas fa-copy mr-2"></i>
+                Copy Fixed Code
+            </button>
+        </div>
+
+        <!-- Side-by-side Comparison -->
+        <div class="comparison-container">
+            <!-- Original Code -->
+            <div class="code-panel">
+                <div class="code-header p-4 flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                        <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                        <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                        <span class="text-white font-semibold">Original Code</span>
+                    </div>
+                    <i class="fas fa-times text-red-400"></i>
+                </div>
+                <div class="code-content p-4">
+                    <pre><code id="original-code" class="language-python"></code></pre>
+                </div>
+            </div>
+
+            <!-- Fixed Code -->
+            <div class="code-panel">
+                <div class="code-header p-4 flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                        <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                        <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                        <span class="text-white font-semibold">Fixed Code</span>
+                    </div>
+                    <i class="fas fa-check text-green-400"></i>
+                </div>
+                <div class="code-content p-4">
+                    <pre><code id="fixed-code" class="language-python"></code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Explanation of Changes -->
+        <div class="mt-8 bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-2xl p-6 border border-white border-opacity-20">
+            <h3 class="text-xl font-semibold text-white mb-4">
+                <i class="fas fa-info-circle mr-2 text-blue-400"></i>
+                What Changed & Why
+            </h3>
+            <div id="changes-explanation" class="text-white opacity-90 space-y-3">
+                <!-- Changes explanation will be inserted here -->
+            </div>
+        </div>
+
+        <!-- AI Improvement Suggestions -->
+        <div class="mt-12">
+            <div class="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-2xl p-8 border border-white border-opacity-20">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-2xl font-bold text-white flex items-center">
+                        <i class="fas fa-lightbulb text-yellow-400 mr-3"></i>
+                        AI-Powered Learning Plan
+                    </h3>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                        <span class="text-green-400 text-sm">Personalized for you</span>
+                    </div>
+                </div>
+                
+                <div id="improvement-suggestions" class="text-white opacity-90">
+                    <div class="text-center">
+                        <i class="fas fa-spinner fa-spin mr-2"></i>
+                        Generating your personalized learning plan...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Next Steps -->
+        <div class="text-center mt-12">
+            <div class="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-2xl p-8 border border-white border-opacity-20 inline-block">
+                <h3 class="text-2xl font-bold text-white mb-4">Ready to Improve More?</h3>
+                <p class="text-white opacity-80 mb-6">
+                    Practice these changes in your own code and see the difference!
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="review.html" 
+                       class="bg-purple-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-purple-700 transition transform hover:scale-105">
+                        <i class="fas fa-redo mr-2"></i>
+                        Review More Code
+                    </a>
+                    <a href="explain.html" 
+                       class="bg-blue-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-blue-700 transition transform hover:scale-105">
+                        <i class="fas fa-graduation-cap mr-2"></i>
+                        Learn More
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Load issue data and generate AI-powered fixed code
+        async function loadCodeComparison() {
+            const issueData = localStorage.getItem('currentIssue');
+            const analysisData = localStorage.getItem('currentAnalysis');
+            
+            if (!issueData) {
+                // Default to style example if no issue data
+                await displayFallbackCodeComparison("Style");
+                return;
+            }
+            
+            const issue = JSON.parse(issueData);
+            const analysis = analysisData ? JSON.parse(analysisData) : null;
+            const originalCode = localStorage.getItem('originalCode') || '';
+            
+            // Check if API key is available
+            if (!window.geminiAnalyzer.getApiKey() || window.geminiAnalyzer.getApiKey() === 'YOUR_GEMINI_API_KEY_HERE') {
+                if (confirm('Gemini API key not set. Would you like to set it now?')) {
+                    // Redirect to review page to set API key
+                    window.location.href = 'review.html';
+                    return;
+                }
+                
+                // Fallback to sample examples
+                await displayFallbackCodeComparison(issue.type);
+                return;
+            }
+            
+            // Show loading state
+            document.getElementById('issue-description').textContent = 'Generating AI-powered fixed code...';
+            document.getElementById('original-code').textContent = 'Loading...';
+            document.getElementById('fixed-code').textContent = 'Loading...';
+            document.getElementById('changes-explanation').innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin mr-2"></i>AI is analyzing and generating improvements...</div>';
+            
+            try {
+                // Generate fixed code using AI
+                const issues = [issue];
+                const fixedCode = await window.geminiAnalyzer.generateFixedCode(originalCode, issues);
+                
+                // Display AI-powered code comparison
+                await displayAICodeComparison(issue, originalCode, fixedCode, issue.explanation || 'AI-generated improvements applied');
+                
+                // Generate and display improvement suggestions
+                if (analysis) {
+                    await loadImprovementSuggestions(originalCode, analysis);
+                } else {
+                    // Generate basic analysis if not available
+                    const basicAnalysis = {
+                        overallScore: 7,
+                        codeQuality: 'Good',
+                        issues: issues
+                    };
+                    await loadImprovementSuggestions(originalCode, basicAnalysis);
+                }
+                
+            } catch (error) {
+                console.error('Error generating AI code comparison:', error);
+                
+                // Fallback to sample comparison
+                await displayFallbackCodeComparison(issue.type);
+                
+                // Show fallback suggestions
+                document.getElementById('improvement-suggestions').innerHTML = `
+                    <div class="space-y-4">
+                        <div class="bg-yellow-400 bg-opacity-20 border border-yellow-400 rounded-lg p-4">
+                            <p class="text-yellow-100">AI suggestions are currently unavailable. Here are some general improvement tips:</p>
+                        </div>
+                        <div class="space-y-3">
+                            <h4 class="font-semibold text-yellow-400">Quick Tips:</h4>
+                            <ul class="space-y-2 text-sm">
+                                <li class="flex items-start"><i class="fas fa-check text-green-400 mr-2 mt-1"></i>Review PEP8 guidelines for better formatting</li>
+                                <li class="flex items-start"><i class="fas fa-check text-green-400 mr-2 mt-1"></i>Add error handling for robust code</li>
+                                <li class="flex items-start"><i class="fas fa-check text-green-400 mr-2 mt-1"></i>Use descriptive variable names</li>
+                                <li class="flex items-start"><i class="fas fa-check text-green-400 mr-2 mt-1"></i>Add comments to explain complex logic</li>
+                            </ul>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Load AI-powered improvement suggestions
+        async function loadImprovementSuggestions(originalCode, analysis) {
+            try {
+                const suggestions = await window.geminiAnalyzer.generateImprovementSuggestions(originalCode, analysis);
+                
+                // Format and display the suggestions
+                document.getElementById('improvement-suggestions').innerHTML = `
+                    <div class="prose prose-invert max-w-none">
+                        ${suggestions.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/• (.*?)(<br>|$)/g, '<li class="mb-2">$1</li>')}
+                    </div>
+                `;
+                
+                // Add syntax highlighting for code blocks if any
+                setTimeout(() => {
+                    const codeBlocks = document.querySelectorAll('#improvement-suggestions pre code');
+                    codeBlocks.forEach(block => {
+                        if (window.Prism) {
+                            window.Prism.highlightElement(block);
+                        }
+                    });
+                }, 100);
+                
+            } catch (error) {
+                console.error('Error loading improvement suggestions:', error);
+                
+                // Show fallback suggestions
+                document.getElementById('improvement-suggestions').innerHTML = `
+                    <div class="space-y-4">
+                        <div class="bg-blue-400 bg-opacity-20 border border-blue-400 rounded-lg p-4">
+                            <p class="text-blue-100">Unable to generate personalized suggestions. Here's a general learning plan:</p>
+                        </div>
+                        <div class="space-y-3">
+                            <h4 class="font-semibold text-blue-400">Your Learning Path:</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="bg-white bg-opacity-5 rounded-lg p-4">
+                                    <h5 class="font-medium text-purple-300 mb-2">🎯 Immediate Actions</h5>
+                                    <ul class="text-sm space-y-1">
+                                        <li>• Apply code formatting fixes</li>
+                                        <li>• Add proper error handling</li>
+                                        <li>• Improve variable naming</li>
+                                    </ul>
+                                </div>
+                                <div class="bg-white bg-opacity-5 rounded-lg p-4">
+                                    <h5 class="font-medium text-green-300 mb-2">📚 Learning Resources</h5>
+                                    <ul class="text-sm space-y-1">
+                                        <li>• Python PEP8 Style Guide</li>
+                                        <li>• Clean Code Principles</li>
+                                        <li>• Error Handling Best Practices</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Display AI-generated code comparison
+        function displayAICodeComparison(issue, originalCode, fixedCode, explanation) {
+            // Set issue description
+            document.getElementById('issue-description').textContent = issue.description;
+
+            // Set original code
+            const originalCodeElement = document.getElementById('original-code');
+            originalCodeElement.textContent = originalCode;
+            
+            // Set fixed code
+            const fixedCodeElement = document.getElementById('fixed-code');
+            fixedCodeElement.textContent = fixedCode;
+
+            // Apply syntax highlighting
+            Prism.highlightElement(originalCodeElement);
+            Prism.highlightElement(fixedCodeElement);
+
+            // Display AI-generated explanation
+            const changesElement = document.getElementById('changes-explanation');
+            changesElement.innerHTML = '';
+            
+            // Parse explanation into points (assuming AI returns formatted explanation)
+            const explanationPoints = explanation.split('\n').filter(point => point.trim());
+            
+            explanationPoints.forEach((point, index) => {
+                const changeDiv = document.createElement('div');
+                changeDiv.className = 'flex items-start space-x-3 mb-3';
+                changeDiv.innerHTML = `
+                    <div class="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mt-0.5 flex-shrink-0">
+                        ${index + 1}
+                    </div>
+                    <span class="flex-1 text-white opacity-90">${point.replace(/^[-*•]\s*/, '')}</span>
+                `;
+                changesElement.appendChild(changeDiv);
+            });
+        }
+
+        // Fallback function using sample examples
+        async function displayFallbackCodeComparison(issueType) {
+            // Sample code examples for different issue types (fallback)
+            const codeExamples = {
+                "Style": {
+                    original: `def calculate_sum(a,b):
+return a+b
+
+result=calculate_sum(5,3)
+print(result)`,
+                    fixed: `def calculate_sum(a, b):
+    return a + b
+
+result = calculate_sum(5, 3)
+print(result)`,
+                    changes: [
+                        "Added proper spacing in function definition (after commas)",
+                        "Added consistent indentation (4 spaces) for the return statement",
+                        "Added spaces around operators (=, +) for better readability",
+                        "Added proper spacing around assignment operators"
+                    ]
+                },
+                "Bug": {
+                    original: `def divide_numbers(a, b):
+    return a / b
+
+result = divide_numbers(10, 0)
+print(result)`,
+                    fixed: `def divide_numbers(a, b):
+    if b == 0:
+        return "Error: Cannot divide by zero"
+    return a / b
+
+result = divide_numbers(10, 0)
+print(result)`,
+                    changes: [
+                        "Added a check to prevent division by zero",
+                        "Returns an error message instead of crashing",
+                        "Added proper error handling for edge cases",
+                        "Made the function more robust and user-friendly"
+                    ]
+                },
+                "Security": {
+                    original: `def login_user(username, password):
+    # Hardcoded API key - security risk!
+    api_key = "sk-1234567890abcdef"
+    
+    if username == "admin" and password == "password123":
+        return f"Welcome {username}! API Key: {api_key}"
+    else:
+        return "Login failed"`,
+                    fixed: `import os
+
+def login_user(username, password):
+    # Get API key from environment variable
+    api_key = os.getenv('API_KEY')
+    
+    if not api_key:
+        return "Error: API key not configured"
+    
+    if username == "admin" and password == "password123":
+        return f"Welcome {username}!"
+    else:
+        return "Login failed"`,
+                    changes: [
+                        "Removed hardcoded API key from the code",
+                        "Now uses environment variables for sensitive data",
+                        "Added validation to check if API key is configured",
+                        "No longer exposes sensitive information in responses"
+                    ]
+                },
+                "Efficiency": {
+                    original: `def find_duplicates(numbers):
+    duplicates = []
+    for i in range(len(numbers)):
+        for j in range(i + 1, len(numbers)):
+            if numbers[i] == numbers[j] and numbers[i] not in duplicates:
+                duplicates.append(numbers[i])
+    return duplicates`,
+                    fixed: `def find_duplicates(numbers):
+    seen = set()
+    duplicates = set()
+    
+    for number in numbers:
+        if number in seen:
+            duplicates.add(number)
+        else:
+            seen.add(number)
+    
+    return list(duplicates)`,
+                    changes: [
+                        "Replaced O(n²) nested loops with O(n) single pass",
+                        "Used sets for O(1) lookups instead of lists",
+                        "Eliminated the inefficient 'not in' check",
+                        "Much faster performance for large datasets"
+                    ]
+                },
+                "Readability": {
+                    original: `def calc(x, y, z):
+    a = x * y
+    b = a + z
+    c = b / 2
+    return c
+
+r = calc(5, 3, 7)
+print(r)`,
+                    fixed: `def calculate_average_of_product_plus_value(base_value, multiplier, additional_value):
+    product = base_value * multiplier
+    sum_with_additional = product + additional_value
+    average = sum_with_additional / 2
+    return average
+
+result = calculate_average_of_product_plus_value(5, 3, 7)
+print(result)`,
+                    changes: [
+                        "Renamed function to be descriptive of its purpose",
+                        "Used meaningful parameter names instead of single letters",
+                        "Renamed variables to clearly indicate their purpose",
+                        "Added clear variable names that explain the calculation steps"
+                    ]
+                }
+            };
+
+            const example = codeExamples[issueType];
+            if (!example) {
+                await displayFallbackCodeComparison("Style"); // Fallback
+                return;
+            }
+
+            // Set issue description
+            const issueData = JSON.parse(localStorage.getItem('currentIssue') || '{"description": "Code improvement example"}');
+            document.getElementById('issue-description').textContent = issueData.description;
+
+            // Set original code with red highlights
+            const originalCodeElement = document.getElementById('original-code');
+            originalCodeElement.textContent = example.original;
+            
+            // Set fixed code with green highlights
+            const fixedCodeElement = document.getElementById('fixed-code');
+            fixedCodeElement.textContent = example.fixed;
+
+            // Apply syntax highlighting
+            Prism.highlightElement(originalCodeElement);
+            Prism.highlightElement(fixedCodeElement);
+
+            // Display changes explanation
+            const changesElement = document.getElementById('changes-explanation');
+            changesElement.innerHTML = '';
+            example.changes.forEach((change, index) => {
+                const changeDiv = document.createElement('div');
+                changeDiv.className = 'flex items-start space-x-3 mb-3';
+                changeDiv.innerHTML = `
+                    <div class="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mt-0.5 flex-shrink-0">
+                        ${index + 1}
+                    </div>
+                    <span class="flex-1 text-white opacity-90">${change}</span>
+                `;
+                changesElement.appendChild(changeDiv);
+            });
+        }
+
+        // Copy fixed code functionality
+        document.getElementById('copy-btn').addEventListener('click', function() {
+            const fixedCode = document.getElementById('fixed-code').textContent;
+            const copyBtn = this;
+            
+            navigator.clipboard.writeText(fixedCode).then(function() {
+                // Change button appearance
+                copyBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Copied!';
+                copyBtn.classList.add('copied');
+                
+                // Reset button after 2 seconds
+                setTimeout(function() {
+                    copyBtn.innerHTML = '<i class="fas fa-copy mr-2"></i>Copy Fixed Code';
+                    copyBtn.classList.remove('copied');
+                }, 2000);
+            }).catch(function(err) {
+                console.error('Failed to copy text: ', err);
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = fixedCode;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                copyBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Copied!';
+                copyBtn.classList.add('copied');
+                setTimeout(function() {
+                    copyBtn.innerHTML = '<i class="fas fa-copy mr-2"></i>Copy Fixed Code';
+                    copyBtn.classList.remove('copied');
+                }, 2000);
+            });
+        });
+
+        // Initialize page when DOM is loaded
+        document.addEventListener('DOMContentLoaded', loadCodeComparison);
+    </script>
+</body>
+</html>

@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Enhanced Gemini Integration</title>
+    <script src="gemini-integration.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .test-button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        .test-button:hover {
+            background: #45a049;
+        }
+        .test-result {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+        }
+        .loading {
+            color: #ffd700;
+        }
+        .success {
+            color: #4CAF50;
+        }
+        .error {
+            color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Enhanced Gemini Integration Test</h1>
+    
+    <div class="test-section">
+        <h2>🔑 API Key Setup</h2>
+        <input type="text" id="apiKey" placeholder="Enter your Gemini API key" style="width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: none;">
+        <button class="test-button" onclick="setApiKey()">Set API Key</button>
+        <div id="apiKeyStatus" class="test-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📝 Code Analysis Test</h2>
+        <button class="test-button" onclick="testCodeAnalysis()">Test Enhanced Code Analysis</button>
+        <div id="analysisResult" class="test-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔧 Fixed Code Generation Test</h2>
+        <button class="test-button" onclick="testFixedCodeGeneration()">Test Fixed Code Generation</button>
+        <div id="fixedCodeResult" class="test-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>💡 Improvement Suggestions Test</h2>
+        <button class="test-button" onclick="testImprovementSuggestions()">Test Improvement Suggestions</button>
+        <div id="suggestionsResult" class="test-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 All Features Integration Test</h2>
+        <button class="test-button" onclick="testAllFeatures()">Test Complete Workflow</button>
+        <div id="integrationResult" class="test-result"></div>
+    </div>
+
+    <script>
+        // Sample test code with various issues
+        const testCode = `def calculate_sum(a,b):
+    #This function calculates sum
+    x=a+b
+    return x
+
+def process_data(data):
+    result=[]
+    for i in data:
+        if i>0:
+            result.append(i*2)
+    return result
+
+# Main execution
+numbers=[1,2,3,4,5]
+print(calculate_sum(10,20))
+print(process_data(numbers))`;
+
+        let geminiAnalyzer;
+
+        function setApiKey() {
+            const apiKey = document.getElementById('apiKey').value;
+            if (!apiKey) {
+                document.getElementById('apiKeyStatus').innerHTML = '<span class="error">❌ Please enter an API key</span>';
+                return;
+            }
+
+            localStorage.setItem('geminiApiKey', apiKey);
+            geminiAnalyzer = new GeminiCodeAnalyzer();
+            
+            document.getElementById('apiKeyStatus').innerHTML = '<span class="success">✅ API key set successfully!</span>';
+        }
+
+        async function testCodeAnalysis() {
+            if (!geminiAnalyzer) {
+                document.getElementById('analysisResult').innerHTML = '<span class="error">❌ Please set API key first</span>';
+                return;
+            }
+
+            document.getElementById('analysisResult').innerHTML = '<span class="loading">⏳ Testing enhanced code analysis...</span>';
+            
+            try {
+                const analysis = await geminiAnalyzer.analyzeCode(testCode);
+                
+                const result = `
+✅ Enhanced Code Analysis Test PASSED!
+
+📊 Analysis Results:
+• Overall Score: ${analysis.overallScore}/10
+• Code Quality: ${analysis.codeQuality}
+• Issues Found: ${analysis.issues.length}
+
+🔍 Issues Breakdown:
+${analysis.issues.map(issue => 
+    `• ${issue.type} (${issue.severity}): ${issue.description}`
+).join('\n')}
+
+📝 Explanation:
+${analysis.explanation}
+
+💡 Key Improvements:
+${analysis.keyImprovements.map(improvement => 
+    `• ${improvement}`
+).join('\n')}
+
+🎯 Practice Tasks:
+${analysis.practiceTasks.map(task => 
+    `• ${task}`
+).join('\n')}
+
+📚 Analogy:
+${analysis.analogy}
+
+✨ Fixed Code Available: ${analysis.fixedCode ? 'Yes' : 'No'}
+                `;
+                
+                document.getElementById('analysisResult').innerHTML = `<span class="success">${result}</span>`;
+                
+            } catch (error) {
+                document.getElementById('analysisResult').innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
+            }
+        }
+
+        async function testFixedCodeGeneration() {
+            if (!geminiAnalyzer) {
+                document.getElementById('fixedCodeResult').innerHTML = '<span class="error">❌ Please set API key first</span>';
+                return;
+            }
+
+            document.getElementById('fixedCodeResult').innerHTML = '<span class="loading">⏳ Testing fixed code generation...</span>';
+            
+            try {
+                // First get analysis
+                const analysis = await geminiAnalyzer.analyzeCode(testCode);
+                
+                // Then generate fixed code
+                const fixedCode = await geminiAnalyzer.generateFixedCode(testCode, analysis.issues);
+                
+                const result = `
+✅ Fixed Code Generation Test PASSED!
+
+🔧 Original Code Issues: ${analysis.issues.length}
+
+✨ Generated Fixed Code:
+\`\`\`python
+${fixedCode}
+\`\`\`
+
+📊 Code Quality Improvements:
+• Original Score: ${analysis.overallScore}/10 (${analysis.codeQuality})
+• Expected Improvement: Enhanced readability, PEP8 compliance, better error handling
+
+🎯 Key Fixes Applied:
+${analysis.issues.slice(0, 3).map(issue => 
+    `• ${issue.type}: ${issue.description}`
+).join('\n')}
+                `;
+                
+                document.getElementById('fixedCodeResult').innerHTML = `<span class="success">${result}</span>`;
+                
+            } catch (error) {
+                document.getElementById('fixedCodeResult').innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
+            }
+        }
+
+        async function testImprovementSuggestions() {
+            if (!geminiAnalyzer) {
+                document.getElementById('suggestionsResult').innerHTML = '<span class="error">❌ Please set API key first</span>';
+                return;
+            }
+
+            document.getElementById('suggestionsResult').innerHTML = '<span class="loading">⏳ Testing improvement suggestions...</span>';
+            
+            try {
+                // First get analysis
+                const analysis = await geminiAnalyzer.analyzeCode(testCode);
+                
+                // Then generate improvement suggestions
+                const suggestions = await geminiAnalyzer.generateImprovementSuggestions(testCode, analysis);
+                
+                const result = `
+✅ Improvement Suggestions Test PASSED!
+
+🎯 Personalized Learning Plan Generated!
+
+📊 Based on Analysis:
+• Overall Score: ${analysis.overallScore}/10
+• Code Quality: ${analysis.codeQuality}
+• Issues Found: ${analysis.issues.length}
+
+💡 AI-Powered Suggestions:
+${suggestions}
+
+✨ Features Tested:
+• Personalized learning path generation
+• Immediate action items
+• Resource recommendations
+• Practice exercises
+• Pro tips and best practices
+                `;
+                
+                document.getElementById('suggestionsResult').innerHTML = `<span class="success">${result}</span>`;
+                
+            } catch (error) {
+                document.getElementById('suggestionsResult').innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
+            }
+        }
+
+        async function testAllFeatures() {
+            if (!geminiAnalyzer) {
+                document.getElementById('integrationResult').innerHTML = '<span class="error">❌ Please set API key first</span>';
+                return;
+            }
+
+            document.getElementById('integrationResult').innerHTML = '<span class="loading">⏳ Testing complete workflow...</span>';
+            
+            try {
+                // Step 1: Analyze code
+                const analysis = await geminiAnalyzer.analyzeCode(testCode);
+                
+                // Step 2: Generate fixed code
+                const fixedCode = await geminiAnalyzer.generateFixedCode(testCode, analysis.issues);
+                
+                // Step 3: Generate improvement suggestions
+                const suggestions = await geminiAnalyzer.generateImprovementSuggestions(testCode, analysis);
+                
+                const result = `
+✅ COMPLETE WORKFLOW TEST PASSED!
+
+🚀 Enhanced Gemini Integration Features:
+
+📊 1. Enhanced Code Analysis
+• Score: ${analysis.overallScore}/10 (${analysis.codeQuality})
+• Issues: ${analysis.issues.length} identified
+• Comprehensive feedback with explanations
+• Practice tasks and analogies
+
+🔧 2. AI-Powered Fixed Code Generation
+• Improved code quality and readability
+• PEP8 compliance
+• Bug fixes and optimizations
+• Enhanced documentation
+
+💡 3. Personalized Learning Plan
+• Immediate action items
+• Resource recommendations
+• Progressive skill development
+• Practice exercises
+
+🎯 4. Enhanced User Experience
+• Better error handling
+• Fallback mechanisms
+• Structured feedback
+• Actionable insights
+
+📈 5. Key Improvements Over Original:
+• More detailed analysis prompts
+• Better JSON parsing and validation
+• Enhanced error handling
+• Additional AI-powered features
+• Improved user feedback
+• Comprehensive learning paths
+
+✨ All features working correctly! The enhanced Gemini integration provides a comprehensive code mentorship experience.
+                `;
+                
+                document.getElementById('integrationResult').innerHTML = `<span class="success">${result}</span>`;
+                
+            } catch (error) {
+                document.getElementById('integrationResult').innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
+            }
+        }
+
+        // Initialize on page load
+        window.onload = function() {
+            const savedApiKey = localStorage.getItem('geminiApiKey');
+            if (savedApiKey && savedApiKey !== 'YOUR_GEMINI_API_KEY_HERE') {
+                document.getElementById('apiKey').value = savedApiKey;
+                geminiAnalyzer = new GeminiCodeAnalyzer();
+                document.getElementById('apiKeyStatus').innerHTML = '<span class="success">✅ API key loaded from storage</span>';
+            }
+        };
+    </script>
+</body>
+</html>

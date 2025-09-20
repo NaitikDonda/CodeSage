@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explain Like I'm a Beginner - CodeSage</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@300;400;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="gemini-integration.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .explanation-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .playful-font {
+            font-family: 'Comic Neue', cursive;
+        }
+        .clean-font {
+            font-family: 'Inter', sans-serif;
+        }
+        .bounce-animation {
+            animation: bounce 2s infinite;
+        }
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+        .task-item {
+            transition: all 0.3s ease;
+        }
+        .task-item:hover {
+            transform: translateX(10px);
+            background: rgba(102, 126, 234, 0.1);
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen">
+    <!-- Navigation -->
+    <nav class="glass-effect p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="text-white text-2xl font-bold clean-font">
+                <i class="fas fa-code mr-2"></i>CodeSage
+            </div>
+            <div class="hidden md:flex space-x-6">
+                <a href="index.html" class="text-white hover:text-gray-200 transition">Home</a>
+                <a href="review.html" class="text-white hover:text-gray-200 transition">Review</a>
+                <a href="about.html" class="text-white hover:text-gray-200 transition">About</a>
+                <a href="mentorship.html" class="text-white hover:text-gray-200 transition">Mentorship</a>
+            </div>
+            <div class="md:hidden">
+                <button id="mobile-menu-btn" class="text-white">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden mt-4 space-y-2">
+            <a href="index.html" class="block text-white hover:text-gray-200 py-2">Home</a>
+            <a href="review.html" class="block text-white hover:text-gray-200 py-2">Review</a>
+            <a href="about.html" class="block text-white hover:text-gray-200 py-2">About</a>
+            <a href="mentorship.html" class="block text-white hover:text-gray-200 py-2">Mentorship</a>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <!-- Back to Results Button -->
+        <div class="mb-8">
+            <a href="review.html" 
+               class="inline-flex items-center text-white hover:text-gray-200 transition transform hover:scale-105">
+                <i class="fas fa-arrow-left mr-2"></i>
+                Back to Review Results
+            </a>
+        </div>
+
+        <!-- Title Section -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-4 playful-font">
+                Explain Like I'm a Beginner
+                <i class="fas fa-graduation-cap ml-3 text-yellow-300 bounce-animation"></i>
+            </h1>
+            <p class="text-white opacity-80 text-lg clean-font">
+                Let's break down this coding concept in the simplest way possible!
+            </p>
+        </div>
+
+        <!-- Issue Description -->
+        <div class="explanation-card p-8 mb-8">
+            <div class="flex items-center mb-6">
+                <div class="bg-purple-100 p-3 rounded-full mr-4">
+                    <i class="fas fa-lightbulb text-purple-600 text-2xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800 clean-font">What We're Explaining</h2>
+            </div>
+            <p id="issue-description" class="text-lg text-gray-700 clean-font leading-relaxed">
+                Loading issue description...
+            </p>
+        </div>
+
+        <!-- Gemini's Simplified Explanation -->
+        <div class="explanation-card p-8 mb-8">
+            <div class="flex items-center mb-6">
+                <div class="bg-blue-100 p-3 rounded-full mr-4">
+                    <i class="fas fa-robot text-blue-600 text-2xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800 clean-font">Simple Explanation</h2>
+            </div>
+            <div id="simple-explanation" class="bg-blue-50 p-6 rounded-xl border-l-4 border-blue-400">
+                <p class="text-lg text-gray-700 playful-font leading-relaxed">
+                    Loading simple explanation...
+                </p>
+            </div>
+        </div>
+
+        <!-- Real-Life Analogy -->
+        <div class="explanation-card p-8 mb-8">
+            <div class="flex items-center mb-6">
+                <div class="bg-green-100 p-3 rounded-full mr-4">
+                    <i class="fas fa-home text-green-600 text-2xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800 clean-font">Real-Life Analogy</h2>
+            </div>
+            <div id="analogy" class="bg-green-50 p-6 rounded-xl border-l-4 border-green-400">
+                <p class="text-lg text-gray-700 clean-font leading-relaxed">
+                    Loading analogy...
+                </p>
+            </div>
+        </div>
+
+        <!-- Mini Practice Tasks -->
+        <div class="explanation-card p-8 mb-8">
+            <div class="flex items-center mb-6">
+                <div class="bg-yellow-100 p-3 rounded-full mr-4">
+                    <i class="fas fa-tasks text-yellow-600 text-2xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800 clean-font">Try It Yourself!</h2>
+            </div>
+            <p class="text-gray-600 mb-6 clean-font">
+                Here are some simple practice tasks to help you understand this concept better:
+            </p>
+            <ul id="practice-tasks" class="space-y-3">
+                <!-- Tasks will be dynamically inserted here -->
+            </ul>
+        </div>
+
+        <!-- Encouragement Section -->
+        <div class="text-center">
+            <div class="explanation-card p-8 inline-block">
+                <div class="text-6xl mb-4">🎉</div>
+                <h3 class="text-2xl font-bold text-gray-800 mb-2 playful-font">Great Job Learning!</h3>
+                <p class="text-gray-600 clean-font">
+                    Keep practicing and you'll master this concept in no time!
+                </p>
+                <div class="mt-6">
+                    <a href="review.html" 
+                       class="bg-purple-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-purple-700 transition transform hover:scale-105 inline-block">
+                        <i class="fas fa-redo mr-2"></i>
+                        Review More Code
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Sample explanations for different issue types
+        const explanations = {
+            "Style": {
+                simple: "Think of code style like handwriting rules in school. Just like you need to write neatly so others can read your work, code needs to be written in a consistent way so other programmers can understand it easily. When everyone follows the same style rules, it's like everyone using the same handwriting - much easier to read!",
+                analogy: "It's like organizing your room. If you throw everything randomly on the floor, nobody can find anything. But if you put toys in the toy box, clothes in the drawer, and books on the shelf, everything is organized and easy to find. Clean code style helps programmers find what they need quickly!",
+                tasks: [
+                    "Take a messy piece of code and add proper spacing and indentation",
+                    "Rename variables with unclear names like 'x' to descriptive names like 'student_age'",
+                    "Add comments to explain what complex parts of your code do",
+                    "Practice writing code that looks neat and organized"
+                ]
+            },
+            "Bug": {
+                simple: "A bug is like a mistake in a recipe. If you're making cookies and accidentally add salt instead of sugar, your cookies will taste terrible! In code, a bug makes your program do the wrong thing or crash. We need to find and fix these mistakes so our program works correctly.",
+                analogy: "Imagine you're building a LEGO castle following instructions. If you skip a step or put the wrong piece in the wrong place, your castle might fall apart! A bug in code is like that wrong LEGO piece - it makes the whole program not work properly.",
+                tasks: [
+                    "Write a simple calculator program and test it with different numbers",
+                    "Create a program that asks for user input and handles if they type text instead of numbers",
+                    "Practice adding 'if' statements to check for possible problems before they happen",
+                    "Test your code with different inputs to find and fix bugs"
+                ]
+            },
+            "Security": {
+                simple: "Security in code is like having a good lock on your diary. You wouldn't write your secrets on a piece of paper and tape it to your front door, right? In code, we need to protect important information like passwords and API keys so bad people can't steal them.",
+                analogy: "Think of your code like your house. You wouldn't leave your front door wide open with your valuables sitting on the table! Security in code is like locking doors and windows, and keeping valuables in a safe place where only authorized people can access them.",
+                tasks: [
+                    "Learn about environment variables for storing secrets",
+                    "Practice writing code that doesn't show passwords in error messages",
+                    "Create a simple login system that protects user information",
+                    "Research common security mistakes and how to avoid them"
+                ]
+            },
+            "Efficiency": {
+                simple: "Efficient code is like taking the shortest path home. If you walk in circles or take the long way around, you'll waste time and energy. Efficient code does the same work but faster and uses less computer power, just like taking the shortcut home!",
+                analogy: "Imagine you need to find a book in a library. You could check every single book one by one (slow), or you could use the catalog system to go directly to the right section (fast). Efficient code is like using the catalog - it gets to the answer much quicker!",
+                tasks: [
+                    "Write a program that finds the largest number in a list efficiently",
+                    "Practice using 'for' loops instead of repeating the same code many times",
+                    "Learn about using the right data structures for different problems",
+                    "Time your code to see how long it takes and try to make it faster"
+                ]
+            },
+            "Readability": {
+                simple: "Readable code is like writing a clear story. If you use big words, run-on sentences, and no paragraphs, nobody will understand your story. But if you use simple words, short sentences, and paragraphs, everyone can enjoy your story! Readable code helps other programmers understand what you wrote.",
+                analogy: "Think of readable code like giving clear directions to your house. If you say 'go there, then turn, then go some more,' people will get lost. But if you say 'walk 2 blocks north on Main Street, then turn right on Oak Street,' people can easily find their way!",
+                tasks: [
+                    "Take complicated code and rewrite it with better variable names",
+                    "Break long functions into smaller, focused functions",
+                    "Add comments to explain what your code does and why",
+                    "Practice writing code that you could understand 6 months from now"
+                ]
+            }
+        };
+
+        // Load issue data from localStorage and get AI explanation
+        async function loadIssueData() {
+            const issueData = localStorage.getItem('currentIssue');
+            if (!issueData) {
+                // If no issue data, use a default example
+                return {
+                    type: "Style",
+                    description: "Inconsistent indentation in function definition"
+                };
+            }
+            return JSON.parse(issueData);
+        }
+
+        // Get AI-powered explanation
+        async function getAIExplanation(issue) {
+            try {
+                // Show loading state
+                document.getElementById('simple-explanation').innerHTML = `
+                    <p class="text-lg text-gray-700 playful-font leading-relaxed">
+                        <i class="fas fa-spinner fa-spin mr-2"></i>
+                        Getting AI explanation...
+                    </p>
+                `;
+                
+                document.getElementById('analogy').innerHTML = `
+                    <p class="text-lg text-gray-700 clean-font leading-relaxed">
+                        <i class="fas fa-spinner fa-spin mr-2"></i>
+                        Creating analogy...
+                    </p>
+                `;
+                
+                // Get real AI explanation
+                const explanation = await window.geminiAnalyzer.generateBeginnerExplanation(issue);
+                return explanation;
+            } catch (error) {
+                console.error('Error getting AI explanation:', error);
+                
+                // Fallback to sample explanations if AI fails
+                if (error.message.includes('API key')) {
+                    if (confirm('Gemini API key not set. Would you like to set it now?')) {
+                        if (typeof showApiKeyModal === 'function') {
+                            showApiKeyModal();
+                        }
+                    }
+                }
+                
+                // Use fallback explanations
+                return explanations[issue.type] || explanations["Style"];
+            }
+        }
+
+        // Initialize the page
+        async function initializePage() {
+            const issue = await loadIssueData();
+            
+            // Set issue description
+            document.getElementById('issue-description').textContent = issue.description;
+            
+            // Get AI explanation
+            const explanation = await getAIExplanation(issue);
+            
+            // Set simple explanation
+            document.getElementById('simple-explanation').innerHTML = `
+                <p class="text-lg text-gray-700 playful-font leading-relaxed">
+                    ${explanation.simple}
+                </p>
+            `;
+            
+            // Set analogy
+            document.getElementById('analogy').innerHTML = `
+                <p class="text-lg text-gray-700 clean-font leading-relaxed">
+                    ${explanation.analogy}
+                </p>
+            `;
+            
+            // Set practice tasks
+            const tasksList = document.getElementById('practice-tasks');
+            tasksList.innerHTML = '';
+            explanation.tasks.forEach((task, index) => {
+                const li = document.createElement('li');
+                li.className = 'task-item flex items-start space-x-3 p-3 rounded-lg cursor-pointer';
+                li.innerHTML = `
+                    <div class="bg-yellow-200 text-yellow-800 rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mt-0.5">
+                        ${index + 1}
+                    </div>
+                    <span class="text-gray-700 clean-font flex-1">${task}</span>
+                    <i class="fas fa-check-circle text-green-500 opacity-0 check-icon transition-opacity duration-300"></i>
+                `;
+                
+                // Add click functionality to mark task as complete
+                li.addEventListener('click', function() {
+                    const checkIcon = this.querySelector('.check-icon');
+                    checkIcon.classList.toggle('opacity-0');
+                    this.classList.toggle('bg-green-50');
+                });
+                
+                tasksList.appendChild(li);
+            });
+        }
+
+        // Initialize page when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initializePage);
+    </script>
+</body>
+</html>

@@ -1,0 +1,1480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="CodeSage">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#7c3aed">
+    <meta name="msapplication-TileColor" content="#7c3aed">
+    <meta name="msapplication-config" content="browserconfig.xml">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <title>Code Review - CodeSage</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="gemini-integration.js"></script>
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .code-font {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .gradient-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            pointer-events: none;
+        }
+        
+        .glass-effect {
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .glass-card {
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.98);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .glass-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        }
+        
+        .code-editor {
+            background: #1e1e1e;
+            border: 2px solid #333;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .code-editor:focus-within {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .code-textarea {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: white;
+            font-family: 'Courier New', monospace;
+            padding: 1rem;
+            min-height: 3rem;
+            transition: all 0.3s ease;
+            touch-action: manipulation;
+        }
+        
+        .code-textarea:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+        }
+        
+        .review-button {
+            background: white;
+            color: #7c3aed;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-weight: bold;
+            min-height: 3rem;
+            min-width: 200px;
+            transition: all 0.3s ease;
+            touch-action: manipulation;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .review-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .review-button:active {
+            transform: translateY(0);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .review-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .theme-button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            min-height: 2.5rem;
+            min-width: 120px;
+            transition: all 0.3s ease;
+            touch-action: manipulation;
+            border: 2px solid transparent;
+        }
+        
+        .theme-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .theme-button:active {
+            transform: translateY(0);
+        }
+        
+        .theme-button.active {
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Mobile-specific form enhancements */
+        @media (max-width: 640px) {
+            .code-textarea {
+                font-size: 16px !important; /* Prevents zoom on iOS */
+                padding: 1.25rem !important;
+                min-height: 4rem !important;
+                border-radius: 16px !important;
+            }
+            
+            .review-button {
+                font-size: 18px !important;
+                padding: 1.25rem 2rem !important;
+                min-height: 3.5rem !important;
+                min-width: 100% !important;
+                border-radius: 16px !important;
+            }
+            
+            .theme-button {
+                font-size: 16px !important;
+                padding: 1rem 1.25rem !important;
+                min-height: 3rem !important;
+                min-width: 100% !important;
+                border-radius: 12px !important;
+                margin-bottom: 0.5rem !important;
+            }
+            
+            input[type="text"],
+            input[type="email"],
+            textarea {
+                font-size: 16px !important; /* Prevents zoom on iOS */
+                padding: 0.875rem !important;
+                min-height: 3rem !important;
+            }
+            
+            select {
+                font-size: 16px !important;
+                padding: 0.875rem !important;
+                min-height: 3rem !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .code-textarea {
+                font-size: 16px !important;
+                padding: 1rem !important;
+                min-height: 3.5rem !important;
+            }
+            
+            .review-button {
+                font-size: 16px !important;
+                padding: 1rem 1.5rem !important;
+                min-height: 3rem !important;
+            }
+            
+            .theme-button {
+                font-size: 14px !important;
+                padding: 0.875rem 1rem !important;
+                min-height: 2.75rem !important;
+            }
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, #ef4444 0%, #f59e0b 25%, #eab308 50%, #84cc16 75%, #22c55e 100%);
+            border-radius: 10px;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .issue-card {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-style: preserve-3d;
+        }
+        
+        .issue-card:hover {
+            transform: translateY(-5px) rotateX(2deg);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .loading-spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .ai-status {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 600;
+        }
+        
+        .cta-button {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .cta-button:hover::before {
+            left: 100%;
+        }
+        
+        .nav-link {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.8);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .slide-up {
+            animation: slideUp 0.8s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.05);
+                opacity: 0.8;
+            }
+        }
+        
+        .expand-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .expand-content.expanded {
+            max-height: 500px;
+        }
+        
+        .score-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            font-size: 1.25rem;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .code-textarea {
+                font-size: 12px;
+            }
+            
+            .glass-card {
+                margin-bottom: 1rem;
+            }
+        }
+        
+        @media (max-width: 640px) {
+            h1 {
+                font-size: 2rem !important;
+                line-height: 1.2 !important;
+            }
+            
+            h2 {
+                font-size: 1.5rem !important;
+            }
+            
+            h3 {
+                font-size: 1.125rem !important;
+            }
+            
+            p {
+                font-size: 0.875rem !important;
+                line-height: 1.5 !important;
+            }
+            
+            .code-textarea {
+                font-size: 11px !important;
+                line-height: 1.4 !important;
+            }
+            
+            .glass-card {
+                padding: 1rem !important;
+                margin-bottom: 1rem;
+            }
+            
+            .code-editor {
+                border-radius: 8px !important;
+            }
+            
+            .cta-button {
+                font-size: 1rem !important;
+                padding: 1rem 1.5rem !important;
+                min-height: 3rem !important;
+            }
+            
+            .issue-card {
+                padding: 1rem !important;
+                margin-bottom: 1rem;
+            }
+            
+            .nav-link {
+                font-size: 1rem !important;
+                padding: 0.75rem 1rem !important;
+            }
+            
+            #mobile-menu {
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.3s ease-in-out;
+            }
+            
+            #mobile-menu.show {
+                max-height: 400px;
+            }
+            
+            .container {
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.75rem !important;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr !important;
+                gap: 1rem !important;
+            }
+            
+            .lg\:col-span-3 {
+                grid-column: span 1 !important;
+            }
+            
+            .lg\:col-span-1 {
+                grid-column: span 1 !important;
+            }
+            
+            .sticky {
+                position: relative !important;
+                top: 0 !important;
+            }
+            
+            .code-textarea {
+                height: 200px !important;
+            }
+            
+            .score-badge {
+                font-size: 1rem !important;
+                padding: 0.25rem 0.75rem !important;
+            }
+            
+            .progress-bar {
+                height: 8px !important;
+            }
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen relative">
+    <!-- Navigation -->
+    <nav class="glass-effect p-4 relative z-10">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="text-white text-2xl font-bold flex items-center space-x-2">
+                <div class="w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-code text-white"></i>
+                </div>
+                <span>CodeSage</span>
+            </div>
+            <div class="hidden md:flex space-x-8">
+                <a href="index.html" class="nav-link text-white hover:text-gray-200 transition font-medium">Home</a>
+                <a href="review.html" class="nav-link text-white hover:text-gray-200 transition font-semibold">Review</a>
+                <a href="about.html" class="nav-link text-white hover:text-gray-200 transition font-medium">About</a>
+                <a href="mentorship.html" class="nav-link text-white hover:text-gray-200 transition font-medium">Mentorship</a>
+            </div>
+            <div class="md:hidden">
+                <button id="mobile-menu-btn" class="text-white p-3 rounded-lg hover:bg-white hover:bg-opacity-10 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50" aria-label="Toggle mobile menu" aria-expanded="false">
+                    <i class="fas fa-bars text-xl transition-transform duration-300"></i>
+                </button>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden mt-4 space-y-2">
+            <a href="index.html" class="block nav-link text-white hover:text-gray-200 py-3 px-4 rounded-lg hover:bg-white hover:bg-opacity-10 transition font-medium focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50">
+                <i class="fas fa-home mr-2"></i>Home
+            </a>
+            <a href="review.html" class="block nav-link text-white hover:text-gray-200 py-3 px-4 rounded-lg hover:bg-white hover:bg-opacity-10 transition font-semibold focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50">
+                <i class="fas fa-search-code mr-2"></i>Review
+            </a>
+            <a href="about.html" class="block nav-link text-white hover:text-gray-200 py-3 px-4 rounded-lg hover:bg-white hover:bg-opacity-10 transition font-medium focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50">
+                <i class="fas fa-info-circle mr-2"></i>About
+            </a>
+            <a href="mentorship.html" class="block nav-link text-white hover:text-gray-200 py-3 px-4 rounded-lg hover:bg-white hover:bg-opacity-10 transition font-medium focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50">
+                <i class="fas fa-graduation-cap mr-2"></i>Mentorship
+            </a>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <!-- Main Content -->
+            <div class="lg:col-span-3">
+                <!-- Title -->
+                <div class="text-center mb-6 fade-in">
+                    <div class="inline-flex items-center justify-center w-12 h-12 bg-white bg-opacity-20 rounded-full mb-3 pulse-animation">
+                        <i class="fas fa-robot text-white text-xl"></i>
+                    </div>
+                    <h1 class="text-3xl md:text-4xl font-bold text-white mb-3">
+                        Submit Your Code for Review
+                    </h1>
+                    <p class="text-white opacity-80 text-base max-w-2xl mx-auto">
+                        Paste your Python code below and get instant AI-powered feedback with detailed insights and improvement suggestions
+                    </p>
+                </div>
+
+                <!-- Code Input Section -->
+                <div class="glass-card rounded-2xl p-6 mb-8 slide-up">
+                    <div class="mb-4">
+                        <div class="flex items-center justify-between mb-4">
+                            <label for="code-input" class="block text-gray-800 font-semibold text-lg flex items-center space-x-2">
+                                <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-code text-purple-600"></i>
+                                </div>
+                                <span>Your Code</span>
+                            </label>
+                            <button onclick="showApiKeyModal()" class="text-sm text-purple-600 hover:text-purple-800 transition flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-purple-50">
+                                <i class="fas fa-key"></i>
+                                <span>Set API Key</span>
+                            </button>
+                        </div>
+                        <div class="code-editor rounded-xl overflow-hidden">
+                            <div class="bg-gray-800 px-4 py-2 flex items-center justify-between border-b border-gray-700">
+                                <div class="flex items-center space-x-2">
+                                    <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                                    <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                                    <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                                    <span class="text-gray-400 text-sm code-font">code.txt</span>
+                                </div>
+                                <div class="text-gray-400 text-sm code-font"></div>
+                            </div>
+                            <textarea 
+                                id="code-input" 
+                                class="code-textarea w-full h-60 md:h-80 p-3"
+                                placeholder="Paste your code here..."></textarea>
+                        </div>
+                    </div>
+                    <button 
+                        id="review-btn" 
+                        class="review-button w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-4 rounded-xl font-semibold text-lg hover:from-purple-700 hover:to-blue-700 transform hover:scale-105 transition-all duration-300 shadow-2xl flex items-center justify-center space-x-3 min-h-[3rem]">
+                        <i class="fas fa-robot"></i>
+                        <span id="btn-text">Review with AI</span>
+                        <div id="loading-spinner" class="loading-spinner ml-2 hidden"></div>
+                    </button>
+                </div>
+
+                <!-- Results Section (Hidden by default) -->
+                <div id="results-section" class="hidden">
+                    <!-- Overall Score -->
+                    <div class="glass-card rounded-2xl p-6 mb-8 fade-in">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-2xl font-bold text-gray-800 flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-star text-yellow-600"></i>
+                                </div>
+                                <span>Overall Score</span>
+                            </h2>
+                            <div class="score-badge">
+                                <span id="score-text">0/10</span>
+                            </div>
+                        </div>
+                        <div class="relative">
+                            <div class="flex-1 bg-gray-200 rounded-full h-6 relative overflow-hidden">
+                                <div id="score-progress" class="progress-bar h-full rounded-full" style="width: 0%"></div>
+                            </div>
+                            <div class="flex justify-between mt-2 text-xs text-gray-500">
+                                <span>Poor</span>
+                                <span>Fair</span>
+                                <span>Good</span>
+                                <span>Great</span>
+                                <span>Excellent</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Issues List -->
+                    <div class="space-y-6" id="issues-list">
+                        <!-- Issues will be dynamically inserted here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="lg:col-span-1">
+                <div class="glass-card rounded-2xl p-6 sticky top-8 slide-up" style="animation-delay: 0.2s">
+                    <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-lightbulb text-yellow-600"></i>
+                        </div>
+                        <span>Helpful Tips</span>
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                            <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <i class="fas fa-check text-green-600 text-xs"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-700">Follow PEP8</h4>
+                                <p class="text-sm text-gray-600">Use proper indentation and naming conventions</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                            <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <i class="fas fa-check text-green-600 text-xs"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-700">Clean Naming</h4>
+                                <p class="text-sm text-gray-600">Use descriptive variable and function names</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                            <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <i class="fas fa-check text-green-600 text-xs"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-700">Add Comments</h4>
+                                <p class="text-sm text-gray-600">Explain complex logic with clear comments</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                            <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <i class="fas fa-check text-green-600 text-xs"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-700">Error Handling</h4>
+                                <p class="text-sm text-gray-600">Include proper exception handling</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                            <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <i class="fas fa-check text-green-600 text-xs"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-700">Test Your Code</h4>
+                                <p class="text-sm text-gray-600">Ensure your code works as expected</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Stats -->
+                    <div class="mt-8 p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl">
+                        <h4 class="font-semibold text-gray-700 mb-3">Quick Stats</h4>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Reviews Today</span>
+                                <span class="font-semibold text-purple-600">12</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Avg. Score</span>
+                                <span class="font-semibold text-blue-600">7.8</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Issues Fixed</span>
+                                <span class="font-semibold text-green-600">45</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            const icon = this.querySelector('i');
+            const isExpanded = this.getAttribute('aria-expanded') === 'true';
+            
+            // Toggle menu visibility
+            mobileMenu.classList.toggle('hidden');
+            mobileMenu.classList.toggle('show');
+            
+            // Update aria-expanded
+            this.setAttribute('aria-expanded', !isExpanded);
+            
+            // Toggle between bars and X icon with rotation
+            if (mobileMenu.classList.contains('hidden')) {
+                icon.className = 'fas fa-bars text-xl transition-transform duration-300';
+            } else {
+                icon.className = 'fas fa-times text-xl transition-transform duration-300 rotate-90';
+            }
+            
+            // Close menu when clicking outside
+            document.addEventListener('click', function closeMenu(e) {
+                if (!mobileMenu.contains(e.target) && !document.getElementById('mobile-menu-btn').contains(e.target)) {
+                    mobileMenu.classList.add('hidden');
+                    mobileMenu.classList.remove('show');
+                    icon.className = 'fas fa-bars text-xl transition-transform duration-300';
+                    document.getElementById('mobile-menu-btn').setAttribute('aria-expanded', 'false');
+                    document.removeEventListener('click', closeMenu);
+                }
+            });
+        });
+
+        // Sample review data (simulated AI responses)
+        const sampleReviews = [
+            {
+                type: "Style",
+                icon: "fas fa-palette",
+                color: "blue",
+                description: "Inconsistent indentation in function definition",
+                problem: "Your code uses mixed indentation (spaces and tabs), which makes it harder to read and maintain. Python recommends using 4 spaces for indentation.",
+                fix: "Replace all tabs with 4 spaces and ensure consistent indentation throughout your code."
+            },
+            {
+                type: "Bug",
+                icon: "fas fa-bug",
+                color: "red",
+                description: "Potential division by zero error",
+                problem: "The function doesn't check if the denominator is zero before performing division, which could cause a runtime error.",
+                fix: "Add a check to ensure the denominator is not zero before performing the division operation."
+            },
+            {
+                type: "Security",
+                icon: "fas fa-shield-alt",
+                color: "orange",
+                description: "Hardcoded sensitive information",
+                problem: "Your code contains hardcoded API keys or passwords, which is a security risk as these could be exposed.",
+                fix: "Move sensitive information to environment variables or configuration files that are not committed to version control."
+            },
+            {
+                type: "Efficiency",
+                icon: "fas fa-tachometer-alt",
+                color: "green",
+                description: "Inefficient loop implementation",
+                problem: "The nested loop creates O(n²) time complexity, which could be slow for large datasets.",
+                fix: "Consider using a more efficient algorithm or data structure to reduce time complexity."
+            },
+            {
+                type: "Readability",
+                icon: "fas fa-eye",
+                color: "purple",
+                description: "Unclear variable names",
+                problem: "Variable names like 'x', 'y', 'temp' don't convey their purpose, making the code harder to understand.",
+                fix: "Use descriptive variable names that clearly indicate their purpose and content."
+            }
+        ];
+
+        function animateScore(score) {
+            const progressBar = document.getElementById('score-progress');
+            const scoreText = document.getElementById('score-text');
+            
+            setTimeout(() => {
+                progressBar.style.width = (score * 10) + '%';
+                scoreText.textContent = score + '/10';
+            }, 100);
+        }
+
+        function generateRealIssues(issues) {
+            const issuesList = document.getElementById('issues-list');
+            issuesList.innerHTML = '';
+            
+            issues.forEach((issue, index) => {
+                const issueCard = createRealIssueCard(issue, index);
+                issuesList.appendChild(issueCard);
+            });
+        }
+
+        function createRealIssueCard(issue, index) {
+            const card = document.createElement('div');
+            card.className = 'issue-card glass-card rounded-xl p-6 fade-in';
+            card.style.animationDelay = `${index * 0.1}s`;
+            
+            const colorClasses = {
+                'Style': 'text-blue-600 bg-blue-100',
+                'Bug': 'text-red-600 bg-red-100',
+                'Security': 'text-orange-600 bg-orange-100',
+                'Efficiency': 'text-green-600 bg-green-100',
+                'Readability': 'text-purple-600 bg-purple-100'
+            };
+            
+            const iconClasses = {
+                'Style': 'fas fa-palette',
+                'Bug': 'fas fa-bug',
+                'Security': 'fas fa-shield-alt',
+                'Efficiency': 'fas fa-tachometer-alt',
+                'Readability': 'fas fa-eye'
+            };
+            
+            const colorClass = colorClasses[issue.type] || 'text-gray-600 bg-gray-100';
+            const iconClass = iconClasses[issue.type] || 'fas fa-exclamation-circle';
+            
+            card.innerHTML = `
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center space-x-4">
+                        <div class="p-3 rounded-full ${colorClass} flex-shrink-0">
+                            <i class="${iconClass} text-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-800 text-lg">${issue.type}</h3>
+                            <p class="text-gray-600">${issue.description}</p>
+                        </div>
+                    </div>
+                    <button class="expand-btn text-gray-500 hover:text-gray-700 transition-all duration-300 p-2 rounded-lg hover:bg-gray-100" data-index="${index}" aria-label="Expand issue details">
+                        <i class="fas fa-chevron-down transform transition-transform duration-300"></i>
+                    </button>
+                </div>
+                <div class="expand-content" id="expand-${index}">
+                    <div class="border-t pt-4 space-y-4">
+                        <div class="bg-red-50 p-4 rounded-lg">
+                            <h4 class="font-semibold text-gray-700 mb-2 flex items-center space-x-2">
+                                <i class="fas fa-exclamation-triangle text-red-500"></i>
+                                <span>Why this is a problem</span>
+                            </h4>
+                            <p class="text-gray-600">${issue.problem}</p>
+                        </div>
+                        <div class="bg-green-50 p-4 rounded-lg">
+                            <h4 class="font-semibold text-gray-700 mb-2 flex items-center space-x-2">
+                                <i class="fas fa-tools text-green-500"></i>
+                                <span>Suggested Fix</span>
+                            </h4>
+                            <p class="text-gray-600">${issue.fix}</p>
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <button class="explain-btn bg-blue-500 text-white px-4 py-3 rounded-lg hover:bg-blue-600 transition flex items-center justify-center space-x-2 flex-1" data-issue='${JSON.stringify(issue)}'>
+                                <i class="fas fa-graduation-cap"></i>
+                                <span>Explain Like I'm a Beginner</span>
+                            </button>
+                            <button class="fix-btn bg-green-500 text-white px-4 py-3 rounded-lg hover:bg-green-600 transition flex items-center justify-center space-x-2 flex-1" data-issue='${JSON.stringify(issue)}'>
+                                <i class="fas fa-code"></i>
+                                <span>Show Fixed Code</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Add expand/collapse functionality
+            const expandBtn = card.querySelector('.expand-btn');
+            expandBtn.addEventListener('click', function() {
+                const expandableContent = card.querySelector('.expand-content');
+                const chevron = expandBtn.querySelector('i');
+                
+                expandableContent.classList.toggle('expanded');
+                chevron.classList.toggle('rotate-180');
+            });
+            
+            // Add explain button functionality
+            const explainBtn = card.querySelector('.explain-btn');
+            explainBtn.addEventListener('click', async function() {
+                console.log('Explain button clicked for issue:', issue);
+                const originalText = this.innerHTML;
+                
+                // Show loading state
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Explaining...</span>';
+                this.disabled = true;
+                
+                try {
+                    console.log('Attempting to get beginner explanation...');
+                    const explanation = await getBeginnerExplanation(issue);
+                    console.log('Explanation received, showing modal...');
+                    showExplanationModal(explanation, issue.type);
+                } catch (error) {
+                    console.error('Error in explain button click handler:', error);
+                    let errorMessage = 'Error getting explanation. Please try again.';
+                    
+                    // Provide more specific error messages
+                    if (error.message.includes('API key not found')) {
+                        errorMessage = 'API key not found. Please set your Gemini API key first.';
+                    } else if (error.message.includes('Invalid issue data')) {
+                        errorMessage = 'Invalid issue data. Please try analyzing your code again.';
+                    } else if (error.message.includes('quota') || error.message.includes('exceeded') || error.message.includes('limit')) {
+                        errorMessage = '⚠️ Gemini API quota exceeded. The free tier has a limit of 50 requests per day. Please try again later or upgrade to a paid plan for unlimited access.';
+                    } else if (error.message.includes('Gemini API Error')) {
+                        errorMessage = 'Gemini API error: ' + error.message.replace('Gemini API Error: ', '');
+                    }
+                    
+                    showNotification(errorMessage, 'error');
+                } finally {
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                }
+            });
+            
+            // Add fix button functionality
+            const fixBtn = card.querySelector('.fix-btn');
+            fixBtn.addEventListener('click', async function() {
+                const issue = JSON.parse(this.getAttribute('data-issue'));
+                const originalText = this.innerHTML;
+                
+                // Show loading state
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Generating fix...</span>';
+                this.disabled = true;
+                
+                try {
+                    const fixedCode = await getFixedCode(issue);
+                    showFixedCodeModal(fixedCode, issue.type);
+                } catch (error) {
+                    showNotification('Error generating fixed code. Please try again.', 'error');
+                } finally {
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                }
+            });
+            
+            return card;
+        }
+        
+        async function getBeginnerExplanation(issue) {
+            console.log('getBeginnerExplanation called with issue:', issue);
+            
+            // Check if issue object is valid
+            if (!issue || !issue.type) {
+                console.error('Invalid issue object:', issue);
+                throw new Error('Invalid issue data');
+            }
+            
+            // Use the enhanced GeminiCodeAnalyzer class
+            if (!window.geminiAnalyzer) {
+                console.log('Initializing GeminiCodeAnalyzer...');
+                // Initialize the analyzer if not already done
+                const apiKey = localStorage.getItem('gemini_api_key') || localStorage.getItem('geminiApiKey');
+                if (!apiKey) {
+                    console.error('API key not found in localStorage');
+                    throw new Error('API key not found. Please set your Gemini API key first.');
+                }
+                window.geminiAnalyzer = new GeminiCodeAnalyzer();
+                window.geminiAnalyzer.setApiKey(apiKey);
+                console.log('GeminiCodeAnalyzer initialized successfully');
+            }
+            
+            try {
+                console.log('Calling generateBeginnerExplanation...');
+                // Use the enhanced generateBeginnerExplanation method
+                const explanation = await window.geminiAnalyzer.generateBeginnerExplanation(issue);
+                console.log('Explanation generated successfully:', explanation);
+                return explanation;
+            } catch (error) {
+                console.error('Error using enhanced beginner explanation generation:', error);
+                
+                // Try to use fallback explanation
+                try {
+                    console.log('Attempting to use fallback explanation...');
+                    const fallbackExplanation = window.geminiAnalyzer.generateFallbackExplanation(issue);
+                    console.log('Fallback explanation generated successfully');
+                    return fallbackExplanation;
+                } catch (fallbackError) {
+                    console.error('Fallback explanation also failed:', fallbackError);
+                    throw new Error('Failed to generate explanation. Please try again.');
+                }
+            }
+        }
+        
+        async function getFixedCode(issue) {
+            // Use the enhanced GeminiCodeAnalyzer class
+            if (!window.geminiAnalyzer) {
+                // Initialize the analyzer if not already done
+                const apiKey = localStorage.getItem('gemini_api_key') || localStorage.getItem('geminiApiKey');
+                if (!apiKey) {
+                    throw new Error('API key not found');
+                }
+                window.geminiAnalyzer = new GeminiCodeAnalyzer();
+                window.geminiAnalyzer.setApiKey(apiKey);
+            }
+            
+            const codeInput = document.getElementById('code-input').value;
+            
+            try {
+                // Use the enhanced generateFixedCode method
+                const fixedCode = await window.geminiAnalyzer.generateFixedCode(codeInput, [issue]);
+                return fixedCode;
+            } catch (error) {
+                console.error('Error using enhanced fixed code generation:', error);
+                throw error;
+            }
+        }
+        
+        function showExplanationModal(explanation, issueType) {
+            console.log('showExplanationModal called with:', { explanation, issueType });
+            
+            // Validate inputs
+            if (!explanation) {
+                console.error('No explanation provided to modal');
+                showNotification('No explanation available. Please try again.', 'error');
+                return;
+            }
+            
+            if (!issueType) {
+                console.error('No issueType provided to modal');
+                issueType = 'Code Issue';
+            }
+            
+            // Escape HTML to prevent XSS
+            const escapedExplanation = explanation
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+            
+            const escapedIssueType = issueType
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+            
+            const modalHTML = `
+                <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" id="explanation-modal">
+                    <div class="glass-card rounded-2xl p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto slide-up">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-2xl font-bold text-gray-800 flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-graduation-cap text-blue-600"></i>
+                                </div>
+                                <span>Beginner Explanation: ${escapedIssueType}</span>
+                            </h3>
+                            <button class="text-gray-500 hover:text-gray-700 p-2 rounded-lg hover:bg-gray-100 transition" onclick="closeExplanationModal()">
+                                <i class="fas fa-times text-xl"></i>
+                            </button>
+                        </div>
+                        <div class="prose prose-sm max-w-none">
+                            <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                                <p class="text-gray-700 whitespace-pre-wrap">${escapedExplanation}</p>
+                            </div>
+                        </div>
+                        <div class="mt-6 flex justify-end">
+                            <button class="cta-button bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition flex items-center space-x-2" onclick="closeExplanationModal()">
+                                <i class="fas fa-check"></i>
+                                <span>Got it!</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            console.log('Showing modal with HTML length:', modalHTML.length);
+            showModal(modalHTML);
+        }
+        
+        function closeExplanationModal() {
+            const modal = document.getElementById('explanation-modal');
+            if (modal) {
+                modal.remove();
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = 'auto';
+            }
+        }
+        
+        // Fallback analysis function for when API quota is exceeded
+        function performFallbackAnalysis(codeInput) {
+            console.log('Performing fallback analysis...');
+            
+            const issues = [];
+            const lines = codeInput.split('\n');
+            
+            // Basic code analysis patterns
+            const patterns = {
+                'Style': [
+                    { pattern: /\s{4,}/, message: 'Inconsistent indentation detected', problem: 'Code uses inconsistent spacing which affects readability', fix: 'Use consistent 4-space indentation throughout your code' },
+                    { pattern: /[A-Z][a-zA-Z]*\s*=/, message: 'Variable name should be snake_case', problem: 'Variable names should follow Python naming conventions', fix: 'Rename variable to use snake_case (e.g., my_variable instead of MyVariable)' }
+                ],
+                'Security': [
+                    { pattern: /eval\(/, message: 'Use of eval() detected', problem: 'eval() can execute arbitrary code and is unsafe', fix: 'Use safer alternatives like ast.literal_eval() or specific parsing functions' },
+                    { pattern: /exec\(/, message: 'Use of exec() detected', problem: 'exec() can execute arbitrary code and is unsafe', fix: 'Use safer alternatives or validate input thoroughly' }
+                ],
+                'Performance': [
+                    { pattern: /for.*in.*range\(len\(/, message: 'Inefficient loop pattern', problem: 'Using range(len()) is less Pythonic and slower', fix: 'Use enumerate() or iterate directly over the sequence' },
+                    { pattern: /\+\s*\+/, message: 'String concatenation in loop', problem: 'Repeated string concatenation is inefficient', fix: 'Use list comprehension or join() method for better performance' }
+                ],
+                'Best Practices': [
+                    { pattern: /if\s*[^:]*:$/, message: 'Missing docstring', problem: 'Functions should have docstrings explaining their purpose', fix: 'Add a docstring after the function definition' },
+                    { pattern: /def\s+\w+\s*\([^)]*\):\s*$/, message: 'Empty function body', problem: 'Function should have implementation or pass statement', fix: 'Add implementation or use pass statement' }
+                ]
+            };
+            
+            // Analyze each line
+            lines.forEach((line, index) => {
+                Object.entries(patterns).forEach(([category, checks]) => {
+                    checks.forEach(check => {
+                        if (check.pattern.test(line)) {
+                            issues.push({
+                                type: category,
+                                description: check.message,
+                                problem: check.problem,
+                                fix: check.fix,
+                                line: index + 1,
+                                severity: category === 'Security' ? 'high' : 'medium'
+                            });
+                        }
+                    });
+                });
+            });
+            
+            // Calculate a basic score
+            const maxScore = 100;
+            const deductions = issues.length * 5;
+            const overallScore = Math.max(0, maxScore - deductions);
+            
+            return {
+                overallScore: overallScore,
+                issues: issues,
+                suggestions: [
+                    'Consider adding more comments to explain complex logic',
+                    'Break down large functions into smaller, focused functions',
+                    'Add error handling for user inputs and external calls'
+                ]
+            };
+        }
+        
+        function showFixedCodeModal(fixedCode, issueType) {
+            // Escape HTML and format code
+            const escapedCode = fixedCode.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            
+            const modalHTML = `
+                <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div class="glass-card rounded-2xl p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto slide-up">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-2xl font-bold text-gray-800 flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-code text-green-600"></i>
+                                </div>
+                                <span>Fixed Code: ${issueType}</span>
+                            </h3>
+                            <button class="text-gray-500 hover:text-gray-700 p-2 rounded-lg hover:bg-gray-100 transition" onclick="this.closest('.fixed').remove()">
+                                <i class="fas fa-times text-xl"></i>
+                            </button>
+                        </div>
+                        <div class="mb-4">
+                            <div class="code-editor rounded-xl overflow-hidden">
+                                <div class="bg-gray-800 px-4 py-2 flex items-center justify-between border-b border-gray-700">
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                                        <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                                        <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                                        <span class="text-gray-400 text-sm code-font">fixed_main.py</span>
+                                    </div>
+                                    <button class="text-gray-400 hover:text-white transition text-sm code-font flex items-center space-x-2" onclick="copyToCode(\'${fixedCode.replace(/'/g, "\\'").replace(/\n/g, '\\\\n').replace(/\r/g, '\\\\r')}\')">
+                                        <i class="fas fa-copy"></i>
+                                        <span>Copy</span>
+                                    </button>
+                                </div>
+                                <pre class="p-4 overflow-x-auto"><code class="language-python code-font">${escapedCode}</code></pre>
+                            </div>
+                        </div>
+                        <div class="flex justify-end space-x-3">
+                            <button class="cta-button bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition flex items-center space-x-2" onclick="this.closest('.fixed').remove()">
+                                <i class="fas fa-times"></i>
+                                <span>Close</span>
+                            </button>
+                            <button class="cta-button bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition flex items-center space-x-2" onclick="copyToCode(\'${fixedCode.replace(/'/g, "\\'").replace(/\n/g, '\\\\n').replace(/\r/g, '\\\\r')}\'); showNotification('Code copied to clipboard!', 'success')">
+                                <i class="fas fa-copy"></i>
+                                <span>Copy Code</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            showModal(modalHTML);
+            
+            // Highlight syntax
+            setTimeout(() => {
+                Prism.highlightAll();
+            }, 100);
+        }
+        
+        function copyToCode(code) {
+            navigator.clipboard.writeText(code).then(() => {
+                showNotification('Code copied to clipboard!', 'success');
+            }).catch(() => {
+                showNotification('Failed to copy code', 'error');
+            });
+        }
+        
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            const bgColor = type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500';
+            const icon = type === 'success' ? 'fas fa-check-circle' : type === 'error' ? 'fas fa-exclamation-circle' : 'fas fa-info-circle';
+            
+            notification.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-4 rounded-lg shadow-lg z-50 flex items-center space-x-3 slide-up`;
+            notification.innerHTML = `
+                <i class="${icon}"></i>
+                <span>${message}</span>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+        
+        // Initialize animations on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add fade-in animation to elements
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('fade-in');
+                    }
+                });
+            });
+            
+            document.querySelectorAll('.glass-card').forEach(card => {
+                observer.observe(card);
+            });
+            
+            // Review button functionality with real AI
+            document.getElementById('review-btn').addEventListener('click', async function() {
+                const codeInput = document.getElementById('code-input').value.trim();
+                
+                if (!codeInput) {
+                    alert('Please paste your code before reviewing.');
+                    return;
+                }
+
+                // Show loading state
+                const btn = this;
+                const btnText = document.getElementById('btn-text');
+                const spinner = document.getElementById('loading-spinner');
+                
+                btn.disabled = true;
+                btnText.textContent = 'Analyzing...';
+                spinner.classList.remove('hidden');
+
+                try {
+                    // Initialize the enhanced GeminiCodeAnalyzer if not already done
+                    if (!window.geminiAnalyzer) {
+                        const apiKey = localStorage.getItem('gemini_api_key') || localStorage.getItem('geminiApiKey');
+                        if (!apiKey) {
+                            throw new Error('API key not found');
+                        }
+                        window.geminiAnalyzer = new GeminiCodeAnalyzer();
+                        window.geminiAnalyzer.setApiKey(apiKey);
+                    }
+                    
+                    // Perform real AI analysis
+                    const analysis = await window.geminiAnalyzer.analyzeCode(codeInput);
+                    
+                    // Store analysis results for other pages
+                    localStorage.setItem('currentAnalysis', JSON.stringify(analysis));
+                    
+                    // Show results section
+                    document.getElementById('results-section').classList.remove('hidden');
+                    
+                    // Animate score
+                    animateScore(analysis.overallScore);
+                    
+                    // Generate issues
+                    generateRealIssues(analysis.issues);
+                    
+                    // Scroll to results
+                    document.getElementById('results-section').scrollIntoView({ behavior: 'smooth' });
+                    
+                } catch (error) {
+                    console.error('Analysis error:', error);
+                    
+                    if (error.message.includes('API key')) {
+                        if (confirm('Gemini API key not set. Would you like to set it now?')) {
+                            showApiKeyModal();
+                        }
+                    } else if (error.message.includes('quota') || error.message.includes('exceeded') || error.message.includes('limit')) {
+                        // Use fallback analysis when API quota is exceeded
+                        const fallbackAnalysis = performFallbackAnalysis(codeInput);
+                        
+                        // Store analysis results for other pages
+                        localStorage.setItem('currentAnalysis', JSON.stringify(fallbackAnalysis));
+                        
+                        // Show results section
+                        document.getElementById('results-section').classList.remove('hidden');
+                        
+                        // Animate score
+                        animateScore(fallbackAnalysis.overallScore);
+                        
+                        // Generate issues
+                        generateRealIssues(fallbackAnalysis.issues);
+                        
+                        // Scroll to results
+                        document.getElementById('results-section').scrollIntoView({ behavior: 'smooth' });
+                        
+                        // Show quota notification
+                        showNotification('⚠️ API quota exceeded. Using fallback analysis. Some features may be limited.', 'warning');
+                    } else {
+                        alert('Error analyzing code: ' + error.message);
+                    }
+                } finally {
+                    // Reset button state
+                    btn.disabled = false;
+                    btnText.textContent = 'Review with AI';
+                    spinner.classList.add('hidden');
+                }
+            });
+        });
+        
+        // Show API Key Modal function
+        function showApiKeyModal() {
+            const modalHTML = `
+                <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div class="glass-card rounded-2xl p-6 max-w-md w-full slide-up">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-2xl font-bold text-gray-800 flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-key text-purple-600"></i>
+                                </div>
+                                <span>Set Gemini API Key</span>
+                            </h3>
+                            <button class="text-gray-500 hover:text-gray-700 p-2 rounded-lg hover:bg-gray-100 transition" onclick="this.closest('.fixed').remove()">
+                                <i class="fas fa-times text-xl"></i>
+                            </button>
+                        </div>
+                        <div class="mb-6">
+                            <p class="text-gray-600 mb-4">
+                                To use CodeSage's AI features, you need a Gemini API key from Google AI Studio.
+                            </p>
+                            <ol class="list-decimal list-inside text-gray-600 space-y-2 text-sm">
+                                <li>Go to <a href="https://makersuite.google.com/app/apikey" target="_blank" class="text-purple-600 hover:text-purple-800 underline">Google AI Studio</a></li>
+                                <li>Create a new API key (it's free)</li>
+                                <li>Copy your API key and paste it below</li>
+                            </ol>
+                        </div>
+                        <div class="mb-6">
+                            <label for="api-key-input" class="block text-sm font-medium text-gray-700 mb-2">Your Gemini API Key:</label>
+                            <input 
+                                type="password" 
+                                id="api-key-input" 
+                                placeholder="Enter your API key here..."
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                            >
+                        </div>
+                        <div class="flex justify-end space-x-3">
+                            <button class="px-6 py-3 text-gray-600 hover:text-gray-800 transition" onclick="this.closest('.fixed').remove()">
+                                Cancel
+                            </button>
+                            <button class="cta-button bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition flex items-center space-x-2" onclick="saveApiKey()">
+                                <i class="fas fa-save"></i>
+                                <span>Save API Key</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            showModal(modalHTML);
+            
+            // Focus on input field
+            setTimeout(() => {
+                const input = document.getElementById('api-key-input');
+                if (input) {
+                    input.focus();
+                }
+            }, 100);
+        }
+        
+        // Save API Key function
+        function saveApiKey() {
+            const apiKeyInput = document.getElementById('api-key-input');
+            const apiKey = apiKeyInput.value.trim();
+            
+            if (!apiKey) {
+                showNotification('Please enter your API key', 'error');
+                return;
+            }
+            
+            if (!apiKey.startsWith('AIza')) {
+                showNotification('Please enter a valid Gemini API key (should start with "AIza")', 'error');
+                return;
+            }
+            
+            localStorage.setItem('gemini_api_key', apiKey);
+            showNotification('API key saved successfully!', 'success');
+            
+            // Close modal and restore scroll
+            const modal = document.querySelector('.fixed');
+            if (modal) {
+                modal.remove();
+            }
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Fix scrolling issues
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ensure body can scroll properly
+            document.body.style.overflow = 'auto';
+            document.body.style.height = 'auto';
+            
+            // Fix modal scrolling issues
+            const style = document.createElement('style');
+            style.textContent = `
+                body {
+                    overflow-y: auto !important;
+                    height: auto !important;
+                }
+                
+                .fixed {
+                    position: fixed !important;
+                    top: 0 !important;
+                    left: 0 !important;
+                    right: 0 !important;
+                    bottom: 0 !important;
+                    z-index: 9999 !important;
+                }
+                
+                .slide-up {
+                    animation: slideUp 0.3s ease-out !important;
+                }
+                
+                @keyframes slideUp {
+                    from {
+                        opacity: 0;
+                        transform: translateY(20px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+                
+                /* Ensure modals don't affect body scroll */
+                .modal-open {
+                    overflow: hidden !important;
+                }
+            `;
+            document.head.appendChild(style);
+        });
+        
+        // Enhanced modal handling to prevent scroll issues
+        function showModal(modalHTML) {
+            // Prevent body scroll when modal is open
+            document.body.classList.add('modal-open');
+            document.body.style.overflow = 'hidden';
+            
+            const modal = document.createElement('div');
+            modal.innerHTML = modalHTML;
+            document.body.appendChild(modal.firstElementChild);
+            
+            // Close modal and restore scroll for all close buttons
+            const modalElement = document.querySelector('.fixed');
+            if (modalElement) {
+                const closeButtons = modalElement.querySelectorAll('[onclick*="remove"], button[onclick*="remove"]');
+                closeButtons.forEach(btn => {
+                    // Remove existing onclick handler
+                    btn.removeAttribute('onclick');
+                    // Add new event listener that handles scroll restoration
+                    btn.addEventListener('click', function() {
+                        modalElement.remove();
+                        document.body.classList.remove('modal-open');
+                        document.body.style.overflow = 'auto';
+                    });
+                });
+                
+                // Also handle clicking outside the modal
+                modalElement.addEventListener('click', function(e) {
+                    if (e.target === modalElement) {
+                        modalElement.remove();
+                        document.body.classList.remove('modal-open');
+                        document.body.style.overflow = 'auto';
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>

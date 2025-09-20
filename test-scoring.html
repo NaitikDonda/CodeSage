@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Enhanced Scoring</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="gemini-integration.js"></script>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-8 text-center">Test Enhanced Scoring System</h1>
+        
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Test Cases</h2>
+            
+            <div class="space-y-4">
+                <div class="border rounded-lg p-4">
+                    <h3 class="font-medium mb-2">Test 1: Code with Errors (Should score low)</h3>
+                    <button onclick="testErrorCode()" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                        Test Error Code
+                    </button>
+                    <div id="error-result" class="mt-4 p-4 bg-gray-100 rounded hidden"></div>
+                </div>
+                
+                <div class="border rounded-lg p-4">
+                    <h3 class="font-medium mb-2">Test 2: Average Code (Should score medium)</h3>
+                    <button onclick="testAverageCode()" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">
+                        Test Average Code
+                    </button>
+                    <div id="average-result" class="mt-4 p-4 bg-gray-100 rounded hidden"></div>
+                </div>
+                
+                <div class="border rounded-lg p-4">
+                    <h3 class="font-medium mb-2">Test 3: Good Code (Should score high)</h3>
+                    <button onclick="testGoodCode()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                        Test Good Code
+                    </button>
+                    <div id="good-result" class="mt-4 p-4 bg-gray-100 rounded hidden"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-4">API Key Setup</h2>
+            <div class="flex space-x-4">
+                <input type="password" id="api-key" placeholder="Enter your Gemini API key" 
+                       class="flex-1 p-3 border rounded-lg">
+                <button onclick="setApiKey()" class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600">
+                    Set API Key
+                </button>
+            </div>
+            <p class="text-sm text-gray-600 mt-2">
+                Get your free API key from <a href="https://makersuite.google.com/app/apikey" target="_blank" class="text-blue-600 underline">Google AI Studio</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function setApiKey() {
+            const apiKey = document.getElementById('api-key').value.trim();
+            if (apiKey) {
+                window.geminiAnalyzer.setApiKey(apiKey);
+                alert('API key set successfully!');
+            } else {
+                alert('Please enter a valid API key');
+            }
+        }
+
+        async function testErrorCode() {
+            const errorCode = `
+def calculate_sum(a,b):
+    # This function has multiple issues
+    result = a + b
+    return result
+
+# Missing error handling
+x = int(input("Enter number: "))
+y = int(input("Enter another number: "))
+print(calculate_sum(x,y))
+`;
+            
+            const resultDiv = document.getElementById('error-result');
+            resultDiv.innerHTML = '<div class="text-blue-600">Analyzing...</div>';
+            resultDiv.classList.remove('hidden');
+            
+            try {
+                const result = await window.geminiAnalyzer.analyzeCode(errorCode);
+                displayResult(result, resultDiv);
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="text-red-600">Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testAverageCode() {
+            const averageCode = `
+def calculate_sum(a, b):
+    # This function works but could be improved
+    result = a + b
+    return result
+
+def main():
+    x = 10
+    y = 20
+    total = calculate_sum(x, y)
+    print(f"The sum is: {total}")
+
+if __name__ == "__main__":
+    main()
+`;
+            
+            const resultDiv = document.getElementById('average-result');
+            resultDiv.innerHTML = '<div class="text-blue-600">Analyzing...</div>';
+            resultDiv.classList.remove('hidden');
+            
+            try {
+                const result = await window.geminiAnalyzer.analyzeCode(averageCode);
+                displayResult(result, resultDiv);
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="text-red-600">Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testGoodCode() {
+            const goodCode = `
+def calculate_sum(a: int, b: int) -> int:
+    """
+    Calculate the sum of two integers.
+    
+    Args:
+        a (int): First integer
+        b (int): Second integer
+    
+    Returns:
+        int: Sum of the two integers
+    """
+    return a + b
+
+def get_user_input() -> tuple[int, int]:
+    """
+    Get two integers from user input with validation.
+    
+    Returns:
+        tuple[int, int]: Two integers entered by the user
+    """
+    while True:
+        try:
+            x = int(input("Enter first number: "))
+            y = int(input("Enter second number: "))
+            return x, y
+        except ValueError:
+            print("Please enter valid integers.")
+
+def main():
+    """Main function to demonstrate the sum calculation."""
+    try:
+        x, y = get_user_input()
+        result = calculate_sum(x, y)
+        print(f"The sum of {x} and {y} is: {result}")
+    except KeyboardInterrupt:
+        print("\\nProgram terminated by user.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+if __name__ == "__main__":
+    main()
+`;
+            
+            const resultDiv = document.getElementById('good-result');
+            resultDiv.innerHTML = '<div class="text-blue-600">Analyzing...</div>';
+            resultDiv.classList.remove('hidden');
+            
+            try {
+                const result = await window.geminiAnalyzer.analyzeCode(goodCode);
+                displayResult(result, resultDiv);
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="text-red-600">Error: ${error.message}</div>`;
+            }
+        }
+
+        function displayResult(result, container) {
+            const scoreColor = result.overallScore >= 8 ? 'text-green-600' : 
+                             result.overallScore >= 6 ? 'text-yellow-600' : 'text-red-600';
+            
+            container.innerHTML = `
+                <div class="space-y-3">
+                    <div class="flex items-center space-x-4">
+                        <span class="text-lg font-semibold">Score:</span>
+                        <span class="text-2xl font-bold ${scoreColor}">${result.overallScore}/10</span>
+                        <span class="px-3 py-1 rounded-full text-sm font-medium ${getQualityColor(result.codeQuality)}">
+                            ${result.codeQuality}
+                        </span>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold mb-2">Issues Found (${result.issues.length}):</h4>
+                        <div class="space-y-2">
+                            ${result.issues.map(issue => `
+                                <div class="border-l-4 ${getSeverityColor(issue.severity)} pl-3 py-1">
+                                    <div class="font-medium">${issue.type} - ${issue.severity}</div>
+                                    <div class="text-sm text-gray-600">${issue.description}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold mb-2">Explanation:</h4>
+                        <p class="text-gray-700">${result.explanation}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getQualityColor(quality) {
+            switch(quality) {
+                case 'Excellent': return 'bg-green-100 text-green-800';
+                case 'Good': return 'bg-blue-100 text-blue-800';
+                case 'Fair': return 'bg-yellow-100 text-yellow-800';
+                case 'Poor': return 'bg-red-100 text-red-800';
+                default: return 'bg-gray-100 text-gray-800';
+            }
+        }
+
+        function getSeverityColor(severity) {
+            switch(severity) {
+                case 'Critical': return 'border-red-500';
+                case 'High': return 'border-orange-500';
+                case 'Medium': return 'border-yellow-500';
+                case 'Low': return 'border-green-500';
+                default: return 'border-gray-500';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="CodeSage">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#7c3aed">
+    <meta name="msapplication-TileColor" content="#7c3aed">
+    <meta name="msapplication-config" content="browserconfig.xml">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <title>My Mentorship - CodeSage</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="gemini-integration.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .dashboard-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        }
+        q.stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: scale(1.05);
+        }
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+        .theme-card {
+            border-left: 4px solid;
+            transition: all 0.3s ease;
+        }
+        .theme-card:hover {
+            transform: translateX(10px);
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-card {
+                margin-bottom: 1rem;
+                padding: 1rem !important;
+            }
+            
+            .stat-card {
+                padding: 1rem !important;
+                margin-bottom: 1rem;
+            }
+            
+            .stat-card .text-3xl {
+                font-size: 1.5rem !important;
+            }
+            
+            .chart-container {
+                height: 250px !important;
+            }
+        }
+        
+        @media (max-width: 640px) {
+            h1 {
+                font-size: 2rem !important;
+                line-height: 1.2 !important;
+            }
+            
+            h2 {
+                font-size: 1.5rem !important;
+            }
+            
+            h3 {
+                font-size: 1.125rem !important;
+            }
+            
+            p {
+                font-size: 0.875rem !important;
+                line-height: 1.5 !important;
+            }
+            
+            .dashboard-card {
+                padding: 0.75rem !important;
+                margin-bottom: 0.75rem;
+            }
+            
+            .stat-card {
+                padding: 0.75rem !important;
+                margin-bottom: 0.75rem;
+            }
+            
+            .stat-card .text-3xl {
+                font-size: 1.25rem !important;
+            }
+            
+            .stat-card .text-sm {
+                font-size: 0.75rem !important;
+            }
+            
+            .chart-container {
+                height: 200px !important;
+            }
+            
+            .grid {
+                gap: 0.75rem !important;
+            }
+            
+            .nav-link {
+                font-size: 1rem !important;
+                padding: 0.75rem 1rem !important;
+            }
+            
+            #mobile-menu {
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.3s ease-in-out;
+            }
+            
+            #mobile-menu.show {
+                max-height: 400px;
+            }
+            
+            .container {
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+            }
+            
+            .theme-card {
+                padding: 0.75rem !important;
+                margin-bottom: 0.5rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.75rem !important;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr !important;
+                gap: 0.5rem !important;
+            }
+            
+            .lg\:col-span-2 {
+                grid-column: span 1 !important;
+            }
+            
+            .lg\:col-span-1 {
+                grid-column: span 1 !important;
+            }
+            
+            .dashboard-card {
+                border-radius: 12px !important;
+            }
+            
+            .stat-card {
+                border-radius: 8px !important;
+            }
+            
+            .chart-container {
+                height: 150px !important;
+            }
+            
+            .sticky {
+                position: relative !important;
+                top: 0 !important;
+            }
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen">
+    <!-- Navigation -->
+    <nav class="glass-effect p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="text-white text-2xl font-bold">
+                <i class="fas fa-code mr-2"></i>CodeSage
+            </div>
+            <div class="hidden md:flex space-x-6">
+                <a href="index.html" class="text-white hover:text-gray-200 transition">Home</a>
+                <a href="review.html" class="text-white hover:text-gray-200 transition">Review</a>
+                <a href="about.html" class="text-white hover:text-gray-200 transition">About</a>
+                <a href="mentorship.html" class="text-white hover:text-gray-200 transition font-semibold">Mentorship</a>
+            </div>
+            <div class="md:hidden">
+                <button id="mobile-menu-btn" class="text-white p-3 rounded-lg hover:bg-white hover:bg-opacity-10 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50" aria-label="Toggle mobile menu" aria-expanded="false">
+                    <i class="fas fa-bars text-xl transition-transform duration-300"></i>
+                </button>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden mt-4 space-y-2">
+            <a href="index.html" class="block nav-link text-white hover:text-gray-200 py-3 px-4 rounded-lg hover:bg-white hover:bg-opacity-10 transition font-medium focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50">
+                <i class="fas fa-home mr-2"></i>Home
+            </a>
+            <a href="review.html" class="block nav-link text-white hover:text-gray-200 py-3 px-4 rounded-lg hover:bg-white hover:bg-opacity-10 transition font-medium focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50">
+                <i class="fas fa-search-code mr-2"></i>Review
+            </a>
+            <a href="about.html" class="block nav-link text-white hover:text-gray-200 py-3 px-4 rounded-lg hover:bg-white hover:bg-opacity-10 transition font-medium focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50">
+                <i class="fas fa-info-circle mr-2"></i>About
+            </a>
+            <a href="mentorship.html" class="block nav-link text-white hover:text-gray-200 py-3 px-4 rounded-lg hover:bg-white hover:bg-opacity-10 transition font-semibold focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50">
+                <i class="fas fa-graduation-cap mr-2"></i>Mentorship
+            </a>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <!-- Title Section -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">
+                Your Coding Journey
+            </h1>
+            <p class="text-white opacity-80 text-lg">
+                Track your progress and get personalized insights
+            </p>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="stat-card p-4 text-center">
+                <div class="text-2xl md:text-3xl font-bold mb-2">24</div>
+                <div class="text-xs md:text-sm opacity-90">Code Reviews</div>
+                <i class="fas fa-search-code text-xl md:text-2xl mt-2 opacity-70"></i>
+            </div>
+            <div class="stat-card p-4 text-center">
+                <div class="text-2xl md:text-3xl font-bold mb-2">7.8</div>
+                <div class="text-xs md:text-sm opacity-90">Average Score</div>
+                <i class="fas fa-star text-xl md:text-2xl mt-2 opacity-70"></i>
+            </div>
+            <div class="stat-card p-4 text-center">
+                <div class="text-2xl md:text-3xl font-bold mb-2">15</div>
+                <div class="text-xs md:text-sm opacity-90">Skills Improved</div>
+                <i class="fas fa-chart-line text-xl md:text-2xl mt-2 opacity-70"></i>
+            </div>
+            <div class="stat-card p-4 text-center">
+                <div class="text-2xl md:text-3xl font-bold mb-2">92%</div>
+                <div class="text-xs md:text-sm opacity-90">Progress</div>
+                <i class="fas fa-trophy text-xl md:text-2xl mt-2 opacity-70"></i>
+            </div>
+        </div>
+
+        <!-- Main Dashboard Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Left Column -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Progress Chart -->
+                <div class="dashboard-card p-4">
+                    <h2 class="text-lg md:text-xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-chart-line mr-2 text-purple-600"></i>
+                        Progress Over Time
+                    </h2>
+                    <div class="chart-container">
+                        <canvas id="progressChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Skills Radar Chart -->
+                <div class="dashboard-card p-4">
+                    <h2 class="text-lg md:text-xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-spider mr-2 text-blue-600"></i>
+                        Skills Overview
+                    </h2>
+                    <div class="chart-container">
+                        <canvas id="skillsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="space-y-6">
+                <!-- Recurring Mistakes -->
+                <div class="dashboard-card p-4">
+                    <h2 class="text-lg md:text-xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-exclamation-triangle mr-2 text-orange-600"></i>
+                        Recurring Mistakes
+                    </h2>
+                    <div class="space-y-3">
+                        <div class="theme-card border-red-500 bg-red-50 p-3 rounded-lg">
+                            <h3 class="font-semibold text-gray-800 mb-2 text-sm">Naming Conventions</h3>
+                            <p class="text-xs text-gray-600 mb-2">You often use unclear variable names</p>
+                            <div class="text-xs text-gray-500">
+                                <strong>Advice:</strong> Use descriptive names like 'user_age' instead of 'x'
+                            </div>
+                        </div>
+                        <div class="theme-card border-yellow-500 bg-yellow-50 p-3 rounded-lg">
+                            <h3 class="font-semibold text-gray-800 mb-2 text-sm">Error Handling</h3>
+                            <p class="text-xs text-gray-600 mb-2">Missing try-catch blocks in critical sections</p>
+                            <div class="text-xs text-gray-500">
+                                <strong>Advice:</strong> Always handle potential errors gracefully
+                            </div>
+                        </div>
+                        <div class="theme-card border-blue-500 bg-blue-50 p-3 rounded-lg">
+                            <h3 class="font-semibold text-gray-800 mb-2 text-sm">Code Efficiency</h3>
+                            <p class="text-xs text-gray-600 mb-2">Using nested loops when simpler solutions exist</p>
+                            <div class="text-xs text-gray-500">
+                                <strong>Advice:</strong> Look for O(n) solutions instead of O(n²)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Learning Roadmap -->
+                <div class="dashboard-card p-4">
+                    <h2 class="text-lg md:text-xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-road mr-2 text-green-600"></i>
+                        Learning Roadmap
+                    </h2>
+                    <div class="space-y-2">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                                ✓
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-800 text-sm">Python Basics</div>
+                                <div class="text-xs text-gray-500">Completed</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                                2
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-800 text-sm">Data Structures</div>
+                                <div class="text-xs text-gray-500">In Progress</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="w-6 h-6 bg-gray-300 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                                3
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-400 text-sm">Algorithms</div>
+                                <div class="text-xs text-gray-400">Upcoming</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="w-6 h-6 bg-gray-300 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                                4
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-400 text-sm">Advanced Patterns</div>
+                                <div class="text-xs text-gray-400">Upcoming</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Achievements -->
+                <div class="dashboard-card p-4">
+                    <h2 class="text-lg md:text-xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-medal mr-2 text-yellow-600"></i>
+                        Recent Achievements
+                    </h2>
+                    <div class="space-y-2">
+                        <div class="flex items-center space-x-3">
+                            <div class="text-xl">🏆</div>
+                            <div>
+                                <div class="font-semibold text-gray-800 text-sm">Code Review Master</div>
+                                <div class="text-xs text-gray-500">Completed 20 reviews</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="text-xl">🔥</div>
+                            <div>
+                                <div class="font-semibold text-gray-800 text-sm">7-Day Streak</div>
+                                <div class="text-xs text-gray-500">Reviewed code daily</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="text-xl">⭐</div>
+                            <div>
+                                <div class="font-semibold text-gray-800 text-sm">High Scorer</div>
+                                <div class="text-xs text-gray-500">Average score above 7.5</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Section -->
+        <div class="text-center mt-12">
+            <div class="dashboard-card p-8 inline-block">
+                <h3 class="text-2xl font-bold text-gray-800 mb-4">Keep Growing!</h3>
+                <p class="text-gray-600 mb-6">
+                    You're making excellent progress. Continue reviewing code to improve your skills!
+                </p>
+                <a href="review.html" 
+                   class="bg-purple-600 text-white px-8 py-3 rounded-full font-semibold hover:bg-purple-700 transition transform hover:scale-105 inline-block">
+                    <i class="fas fa-code mr-2"></i>
+                    Review More Code
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            const icon = this.querySelector('i');
+            const isExpanded = this.getAttribute('aria-expanded') === 'true';
+            
+            // Toggle menu visibility
+            mobileMenu.classList.toggle('hidden');
+            mobileMenu.classList.toggle('show');
+            
+            // Update aria-expanded
+            this.setAttribute('aria-expanded', !isExpanded);
+            
+            // Toggle between bars and X icon with rotation
+            if (mobileMenu.classList.contains('hidden')) {
+                icon.className = 'fas fa-bars text-xl transition-transform duration-300';
+            } else {
+                icon.className = 'fas fa-times text-xl transition-transform duration-300 rotate-90';
+            }
+            
+            // Close menu when clicking outside
+            document.addEventListener('click', function closeMenu(e) {
+                if (!mobileMenu.contains(e.target) && !document.getElementById('mobile-menu-btn').contains(e.target)) {
+                    mobileMenu.classList.add('hidden');
+                    mobileMenu.classList.remove('show');
+                    icon.className = 'fas fa-bars text-xl transition-transform duration-300';
+                    document.getElementById('mobile-menu-btn').setAttribute('aria-expanded', 'false');
+                    document.removeEventListener('click', closeMenu);
+                }
+            });
+        });
+
+        // AI-powered mentorship dashboard
+        let progressChart, skillsChart;
+        let userHistory = [];
+        
+        // Initialize dashboard with AI insights
+        async function initializeDashboard() {
+            try {
+                // Show loading state
+                showLoadingState();
+                
+                // Initialize the enhanced GeminiCodeAnalyzer
+                const apiKey = localStorage.getItem('gemini_api_key') || localStorage.getItem('geminiApiKey');
+                if (!apiKey) {
+                    throw new Error('API key not found');
+                }
+                window.geminiAnalyzer = new GeminiCodeAnalyzer();
+                window.geminiAnalyzer.setApiKey(apiKey);
+                
+                // Load user's review history from localStorage
+                loadUserHistory();
+                
+                // Generate AI-powered insights
+                await generateAIInsights();
+                
+                // Initialize charts with real data
+                initializeCharts();
+                
+                // Update recurring mistakes with AI analysis
+                await updateRecurringMistakes();
+                
+                // Update learning roadmap with AI recommendations
+                await updateLearningRoadmap();
+                
+            } catch (error) {
+                console.error('Dashboard initialization error:', error);
+                
+                if (error.message.includes('API key')) {
+                    if (confirm('Gemini API key not set. Would you like to set it now?')) {
+                        window.location.href = 'review.html';
+                        return;
+                    }
+                }
+                
+                // Fallback to sample data
+                initializeFallbackDashboard();
+            }
+        }
+        
+        function showLoadingState() {
+            // Update stats with loading indicators
+            document.querySelectorAll('.stat-card .text-3xl').forEach(el => {
+                el.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            });
+            
+            // Show loading in recurring mistakes section
+            const mistakesContainer = document.querySelector('.theme-card').parentElement;
+            mistakesContainer.innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin mr-2"></i>AI is analyzing your coding patterns...</div>';
+        }
+        
+        function loadUserHistory() {
+            // Load analysis history from localStorage
+            const history = localStorage.getItem('analysisHistory');
+            if (history) {
+                userHistory = JSON.parse(history);
+            } else {
+                // Create sample history if none exists
+                userHistory = generateSampleHistory();
+            }
+        }
+        
+        function generateSampleHistory() {
+            // Generate sample history for demonstration
+            const sampleHistory = [];
+            const sampleIssues = ['Style', 'Bug', 'Security', 'Efficiency', 'Readability'];
+            
+            for (let i = 0; i < 24; i++) {
+                sampleHistory.push({
+                    date: new Date(Date.now() - (23 - i) * 7 * 24 * 60 * 60 * 1000),
+                    score: Math.floor(Math.random() * 4) + 6, // Scores between 6-9
+                    issues: sampleIssues.slice(0, Math.floor(Math.random() * 3) + 1)
+                });
+            }
+            
+            localStorage.setItem('analysisHistory', JSON.stringify(sampleHistory));
+            return sampleHistory;
+        }
+        
+        async function generateAIInsights() {
+            if (userHistory.length === 0) return;
+            
+            try {
+                // Generate personalized insights using AI
+                const insights = await window.geminiAnalyzer.generatePersonalizedInsights(userHistory);
+                
+                // Update stats with AI-generated insights
+                updateStats(insights.stats);
+                
+                // Store insights for other functions
+                window.currentInsights = insights;
+                
+            } catch (error) {
+                console.error('AI insights generation error:', error);
+                throw error;
+            }
+        }
+        
+        function updateStats(stats) {
+            // Update the stats cards with real data
+            const statElements = document.querySelectorAll('.stat-card .text-3xl');
+            
+            if (statElements[0]) statElements[0].textContent = stats.totalReviews || userHistory.length;
+            if (statElements[1]) statElements[1].textContent = stats.averageScore?.toFixed(1) || '7.8';
+            if (statElements[2]) statElements[2].textContent = stats.skillsImproved || '15';
+            if (statElements[3]) statElements[3].textContent = stats.progress || '92%';
+        }
+        
+        function initializeCharts() {
+            // Progress Chart
+            const progressCtx = document.getElementById('progressChart').getContext('2d');
+            
+            // Prepare data for progress chart
+            const weeklyData = prepareWeeklyProgressData();
+            
+            progressChart = new Chart(progressCtx, {
+                type: 'line',
+                data: {
+                    labels: weeklyData.labels,
+                    datasets: [{
+                        label: 'Code Quality Score',
+                        data: weeklyData.scores,
+                        borderColor: 'rgb(102, 126, 234)',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: 'rgb(102, 126, 234)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 10,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Skills Radar Chart
+            const skillsCtx = document.getElementById('skillsChart').getContext('2d');
+            
+            // Prepare skills data
+            const skillsData = prepareSkillsData();
+            
+            skillsChart = new Chart(skillsCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['Code Style', 'Bug Prevention', 'Security', 'Efficiency', 'Readability', 'Error Handling'],
+                    datasets: [{
+                        label: 'Current Level',
+                        data: skillsData.current,
+                        borderColor: 'rgb(118, 75, 162)',
+                        backgroundColor: 'rgba(118, 75, 162, 0.2)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgb(118, 75, 162)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }, {
+                        label: 'Target Level',
+                        data: skillsData.target,
+                        borderColor: 'rgb(34, 197, 94)',
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        pointBackgroundColor: 'rgb(34, 197, 94)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 10,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function prepareWeeklyProgressData() {
+            // Group user history by weeks
+            const weeklyData = {};
+            
+            userHistory.forEach(entry => {
+                const weekKey = `Week ${Math.floor(entry.date.getDate() / 7) + 1}`;
+                if (!weeklyData[weekKey]) {
+                    weeklyData[weekKey] = [];
+                }
+                weeklyData[weekKey].push(entry.score);
+            });
+            
+            const labels = Object.keys(weeklyData).slice(0, 6);
+            const scores = labels.map(label => {
+                const weekScores = weeklyData[label];
+                return weekScores.reduce((sum, score) => sum + score, 0) / weekScores.length;
+            });
+            
+            return { labels, scores };
+        }
+        
+        function prepareSkillsData() {
+            // Analyze user history to determine skill levels
+            const skillCounts = {
+                'Code Style': 0,
+                'Bug Prevention': 0,
+                'Security': 0,
+                'Efficiency': 0,
+                'Readability': 0,
+                'Error Handling': 0
+            };
+            
+            const skillScores = {
+                'Code Style': [],
+                'Bug Prevention': [],
+                'Security': [],
+                'Efficiency': [],
+                'Readability': [],
+                'Error Handling': []
+            };
+            
+            userHistory.forEach(entry => {
+                entry.issues.forEach(issue => {
+                    if (skillCounts.hasOwnProperty(issue)) {
+                        skillCounts[issue]++;
+                        skillScores[issue].push(entry.score);
+                    }
+                });
+            });
+            
+            // Calculate current levels (inverse of issue frequency, weighted by scores)
+            const current = Object.keys(skillCounts).map(skill => {
+                const frequency = skillCounts[skill];
+                const avgScore = skillScores[skill].length > 0 
+                    ? skillScores[skill].reduce((sum, score) => sum + score, 0) / skillScores[skill].length 
+                    : 5;
+                return Math.max(1, Math.min(10, avgScore - (frequency * 0.3)));
+            });
+            
+            // Target levels (always higher than current)
+            const target = current.map(level => Math.min(10, level + 2));
+            
+            return { current, target };
+        }
+        
+        async function updateRecurringMistakes() {
+            try {
+                // Generate AI-powered recurring mistakes analysis
+                const mistakes = await window.geminiAnalyzer.analyzeRecurringMistakes(userHistory);
+                
+                const mistakesContainer = document.querySelector('.theme-card').parentElement;
+                mistakesContainer.innerHTML = '';
+                
+                mistakes.forEach((mistake, index) => {
+                    const mistakeCard = document.createElement('div');
+                    mistakeCard.className = `theme-card border-${mistake.color}-500 bg-${mistake.color}-50 p-4 rounded-lg cursor-pointer`;
+                    mistakeCard.innerHTML = `
+                        <h3 class="font-semibold text-gray-800 mb-2">${mistake.title}</h3>
+                        <p class="text-sm text-gray-600 mb-3">${mistake.description}</p>
+                        <div class="text-xs text-gray-500">
+                            <strong>AI Advice:</strong> ${mistake.advice}
+                        </div>
+                    `;
+                    
+                    mistakeCard.addEventListener('click', function() {
+                        showMistakeDetails(mistake);
+                    });
+                    
+                    mistakesContainer.appendChild(mistakeCard);
+                });
+                
+            } catch (error) {
+                console.error('Recurring mistakes analysis error:', error);
+                // Fallback to static content will be handled by initializeFallbackDashboard
+            }
+        }
+        
+        async function updateLearningRoadmap() {
+            try {
+                // Generate AI-powered learning roadmap
+                const roadmap = await window.geminiAnalyzer.generateLearningRoadmap(userHistory);
+                
+                const roadmapContainer = document.querySelector('.flex.items-center.space-x-3').parentElement;
+                roadmapContainer.innerHTML = '';
+                
+                roadmap.forEach((item, index) => {
+                    const roadmapItem = document.createElement('div');
+                    roadmapItem.className = 'flex items-center space-x-3';
+                    
+                    const statusIcon = item.status === 'completed' ? '✓' : 
+                                     item.status === 'in-progress' ? (index + 1) : (index + 1);
+                    const statusColor = item.status === 'completed' ? 'bg-green-500' : 
+                                      item.status === 'in-progress' ? 'bg-blue-500' : 'bg-gray-300';
+                    const textColor = item.status === 'upcoming' ? 'text-gray-400' : 'text-gray-800';
+                    
+                    roadmapItem.innerHTML = `
+                        <div class="w-8 h-8 ${statusColor} text-white rounded-full flex items-center justify-center text-sm font-bold">
+                            ${statusIcon}
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-semibold ${textColor}">${item.title}</div>
+                            <div class="text-xs text-gray-500">${item.status.replace('-', ' ')}</div>
+                        </div>
+                    `;
+                    
+                    roadmapContainer.appendChild(roadmapItem);
+                });
+                
+            } catch (error) {
+                console.error('Learning roadmap generation error:', error);
+                // Fallback to static content
+            }
+        }
+        
+        function showMistakeDetails(mistake) {
+            // Create a modal to show detailed mistake information
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+            modal.innerHTML = `
+                <div class="bg-white rounded-lg p-6 max-w-md w-full">
+                    <h3 class="text-xl font-bold mb-4">${mistake.title}</h3>
+                    <p class="text-gray-600 mb-4">${mistake.description}</p>
+                    <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                        <h4 class="font-semibold mb-2">AI Recommendations:</h4>
+                        <p class="text-sm text-gray-700">${mistake.detailedAdvice}</p>
+                    </div>
+                    <button onclick="this.closest('.fixed').remove()" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
+                        Close
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        function initializeFallbackDashboard() {
+            // Initialize with sample data if AI fails
+            
+            // Update stats with sample data
+            const statElements = document.querySelectorAll('.stat-card .text-3xl');
+            const sampleStats = ['24', '7.8', '15', '92%'];
+            statElements.forEach((el, index) => {
+                el.textContent = sampleStats[index];
+            });
+            
+            // Initialize charts with sample data
+            initializeCharts();
+            
+            // Add interactivity to theme cards
+            document.querySelectorAll('.theme-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    this.style.transform = 'scale(1.02)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 200);
+                });
+            });
+        }
+        
+        // Initialize dashboard when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initializeDashboard);
+    </script>
+</body>
+</html>

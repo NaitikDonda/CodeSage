@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="CodeSage">
@@ -26,7 +26,6 @@
         .gradient-bg {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
             position: relative;
-            overflow: hidden;
         }
         
         .gradient-bg::before {
@@ -209,6 +208,128 @@
             }
         }
         
+        /* Typing Animation Styles */
+        .typing-text {
+            border-right: 2px solid rgba(255, 255, 255, 0.8);
+            white-space: nowrap;
+            overflow: hidden;
+            animation: typing 3s steps(40, end), blink-caret 0.75s step-end infinite;
+        }
+        
+        @keyframes typing {
+            from {
+                width: 0;
+            }
+            to {
+                width: 100%;
+            }
+        }
+        
+        @keyframes blink-caret {
+            from, to {
+                border-color: transparent;
+            }
+            50% {
+                border-color: rgba(255, 255, 255, 0.8);
+            }
+        }
+        
+        .typing-container {
+            display: inline-block;
+        }
+        
+        /* Rotating Text Animation */
+        .rotating-text {
+            display: inline-block;
+            position: relative;
+        }
+        
+        .rotating-text span {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            animation: rotate-text 8s infinite;
+        }
+        
+        .rotating-text span:nth-child(1) {
+            animation-delay: 0s;
+        }
+        
+        .rotating-text span:nth-child(2) {
+            animation-delay: 2s;
+        }
+        
+        .rotating-text span:nth-child(3) {
+            animation-delay: 4s;
+        }
+        
+        .rotating-text span:nth-child(4) {
+            animation-delay: 6s;
+        }
+        
+        @keyframes rotate-text {
+            0%, 25% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            30%, 100% {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+        }
+        
+        /* Glowing Effect */
+        .glow {
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.3);
+            }
+            to {
+                text-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 0 30px rgba(255, 255, 255, 0.5);
+            }
+        }
+        
+        /* Bounce Animation */
+        .bounce-in {
+            animation: bounceIn 1s ease-out;
+        }
+        
+        @keyframes bounceIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.3);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.05);
+            }
+            70% {
+                transform: scale(0.9);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        /* Floating Animation */
+        .float-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+        
         @media (max-width: 768px) {
             .hero-text {
                 font-size: 2.5rem !important;
@@ -320,7 +441,7 @@
         }
     </style>
 </head>
-<body class="gradient-bg min-h-screen relative">
+<body class="gradient-bg relative">
     <!-- Floating Background Shapes -->
     <div class="floating-shapes">
         <div class="shape"></div>
@@ -367,81 +488,85 @@
     </nav>
 
     <!-- Hero Section -->
-    <div class="flex items-center justify-center min-h-screen px-4 relative z-10">
+    <div class="flex items-center justify-center py-20 px-4 relative z-10">
         <div class="text-center max-w-6xl mx-auto">
             <!-- Main Title -->
             <div class="mb-8 fade-in">
-                <div class="inline-flex items-center justify-center w-20 h-20 bg-white bg-opacity-20 rounded-full mb-6 pulse-animation">
-                    <i class="fas fa-robot text-white text-3xl"></i>
+                <div class="inline-flex items-center justify-center w-20 h-20 bg-white bg-opacity-20 rounded-full mb-6 pulse-animation float-animation">
+                    <i class="fas fa-robot text-white text-3xl glow"></i>
                 </div>
-                <h1 class="text-5xl md:text-7xl font-bold hero-text mb-6">
+                <h1 class="text-5xl md:text-7xl font-bold hero-text mb-6 bounce-in">
                     CodeSage
                 </h1>
             </div>
             
-            <!-- Tagline -->
+            <!-- Tagline with Typing Animation -->
             <h2 class="text-2xl md:text-3xl text-white mb-6 opacity-90 slide-in" style="animation-delay: 0.2s">
-                Your AI-powered coding mentor
+                <div class="typing-container">
+                    <span class="typing-text">Your AI-powered coding mentor</span>
+                </div>
             </h2>
             
-            <!-- Subtext -->
+            <!-- Static Subtext -->
             <p class="text-lg md:text-xl text-white mb-12 opacity-80 max-w-3xl mx-auto slide-in" style="animation-delay: 0.4s">
                 Get personalized code reviews, explanations, and mentorship with advanced AI technology. 
                 Transform your coding skills with intelligent feedback and guidance.
+                <br><br>
+                <strong>Accelerate your development journey today</strong>
             </p>
             
             <!-- Action Buttons -->
             <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16 slide-in" style="animation-delay: 0.6s">
                 <a href="review.html" 
-                   class="cta-button bg-white text-purple-700 px-6 py-4 rounded-full font-semibold text-lg hover:bg-gray-100 transform hover:scale-105 transition-all duration-300 shadow-2xl flex items-center space-x-3 min-w-[200px] justify-center">
-                    <i class="fas fa-play"></i>
+                   class="cta-button bg-white text-purple-700 px-8 py-4 rounded-full font-semibold text-lg hover:bg-gray-100 transform hover:scale-105 transition-all duration-300 shadow-2xl flex items-center space-x-3 min-w-[200px] justify-center bounce-in" style="animation-delay: 0.8s">
+                    <i class="fas fa-play float-animation"></i>
                     <span>Start Reviewing</span>
                 </a>
                 <a href="about.html" 
-                   class="cta-button glass-effect text-white px-6 py-4 rounded-full font-semibold text-lg hover:bg-white hover:bg-opacity-20 transform hover:scale-105 transition-all duration-300 border border-white border-opacity-30 flex items-center space-x-3 min-w-[200px] justify-center">
-                    <i class="fas fa-info-circle"></i>
+                   class="cta-button glass-effect text-white px-8 py-4 rounded-full font-semibold text-lg hover:bg-white hover:bg-opacity-20 transform hover:scale-105 transition-all duration-300 border border-white border-opacity-30 flex items-center space-x-3 min-w-[200px] justify-center bounce-in" style="animation-delay: 1s">
+                    <i class="fas fa-info-circle float-animation"></i>
                     <span>Learn More</span>
                 </a>
             </div>
             
             <!-- Feature Highlights -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 slide-in" style="animation-delay: 0.8s">
-                <div class="feature-card glass-effect p-8 rounded-2xl text-white group">
-                    <div class="flex items-center justify-center w-16 h-16 bg-white bg-opacity-20 rounded-full mb-6 group-hover:scale-110 transition-transform duration-300">
-                        <i class="fas fa-search-code text-3xl"></i>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 slide-in" style="animation-delay: 1.2s">
+                <div class="feature-card glass-effect p-8 rounded-2xl text-white group bounce-in" style="animation-delay: 1.4s">
+                    <div class="flex items-center justify-center w-16 h-16 bg-white bg-opacity-20 rounded-full mb-6 group-hover:scale-110 transition-transform duration-300 float-animation">
+                        <i class="fas fa-search-code text-3xl glow"></i>
                     </div>
-                    <h3 class="text-xl font-semibold mb-3">Smart Reviews</h3>
+                    <h3 class="text-xl font-semibold mb-3 group-hover:text-yellow-300 transition-colors">Smart Reviews</h3>
                     <p class="opacity-80 leading-relaxed">AI-powered code analysis with detailed, actionable feedback to improve your code quality</p>
                 </div>
-                <div class="feature-card glass-effect p-8 rounded-2xl text-white group">
-                    <div class="flex items-center justify-center w-16 h-16 bg-white bg-opacity-20 rounded-full mb-6 group-hover:scale-110 transition-transform duration-300">
-                        <i class="fas fa-graduation-cap text-3xl"></i>
+                <div class="feature-card glass-effect p-8 rounded-2xl text-white group bounce-in" style="animation-delay: 1.6s">
+                    <div class="flex items-center justify-center w-16 h-16 bg-white bg-opacity-20 rounded-full mb-6 group-hover:scale-110 transition-transform duration-300 float-animation" style="animation-delay: 0.2s">
+                        <i class="fas fa-graduation-cap text-3xl glow"></i>
                     </div>
-                    <h3 class="text-xl font-semibold mb-3">Learn & Grow</h3>
+                    <h3 class="text-xl font-semibold mb-3 group-hover:text-green-300 transition-colors">Learn & Grow</h3>
                     <p class="opacity-80 leading-relaxed">Beginner-friendly explanations and personalized mentorship tailored to your learning pace</p>
                 </div>
-                <div class="feature-card glass-effect p-8 rounded-2xl text-white group">
-                    <div class="flex items-center justify-center w-16 h-16 bg-white bg-opacity-20 rounded-full mb-6 group-hover:scale-110 transition-transform duration-300">
-                        <i class="fas fa-chart-line text-3xl"></i>
+                <div class="feature-card glass-effect p-8 rounded-2xl text-white group bounce-in" style="animation-delay: 1.8s">
+                    <div class="flex items-center justify-center w-16 h-16 bg-white bg-opacity-20 rounded-full mb-6 group-hover:scale-110 transition-transform duration-300 float-animation" style="animation-delay: 0.4s">
+                        <i class="fas fa-chart-line text-3xl glow"></i>
                     </div>
-                    <h3 class="text-xl font-semibold mb-3">Track Progress</h3>
+                    <h3 class="text-xl font-semibold mb-3 group-hover:text-blue-300 transition-colors">Track Progress</h3>
                     <p class="opacity-80 leading-relaxed">Monitor your coding journey with detailed analytics and celebrate your improvements</p>
                 </div>
             </div>
             
             <!-- Trust Indicators -->
-            <div class="mt-16 flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-8 text-white opacity-70 trust-indicators">
-                <div class="flex items-center space-x-2">
-                    <i class="fas fa-check-circle text-green-400"></i>
-                    <span class="text-sm">Powered by Gemini AI</span>
+            <div class="mt-16 flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-8 text-white opacity-70 trust-indicators slide-in" style="animation-delay: 2s">
+                <div class="flex items-center space-x-2 bounce-in" style="animation-delay: 2.2s">
+                    <i class="fas fa-check-circle text-green-400 glow"></i>
+                    <span class="text-sm hover:text-white transition-colors">Powered by Gemini AI</span>
                 </div>
-                <div class="flex items-center space-x-2">
-                    <i class="fas fa-shield-alt text-blue-400"></i>
-                    <span class="text-sm">Secure & Private</span>
+                <div class="flex items-center space-x-2 bounce-in" style="animation-delay: 2.4s">
+                    <i class="fas fa-shield-alt text-blue-400 glow"></i>
+                    <span class="text-sm hover:text-white transition-colors">Secure & Private</span>
                 </div>
-                <div class="flex items-center space-x-2">
-                    <i class="fas fa-users text-purple-400"></i>
-                    <span class="text-sm">10,000+ Developers</span>
+                <div class="flex items-center space-x-2 bounce-in" style="animation-delay: 2.6s">
+                    <i class="fas fa-users text-purple-400 glow"></i>
+                    <span class="text-sm hover:text-white transition-colors">10,000+ Developers</span>
                 </div>
             </div>
         </div>
@@ -528,5 +653,28 @@
             observer.observe(el);
         });
     </script>
+    
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-8 mt-16">
+        <div class="container mx-auto px-4 text-center">
+            <div class="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
+                        <i class="fas fa-robot text-white text-sm"></i>
+                    </div>
+                    <span class="text-lg font-semibold">2025 CodeSage</span>
+                </div>
+                <div class="flex items-center space-x-6 text-sm text-gray-400">
+                    <a href="index.html" class="hover:text-white hover:scale-110 transition-all duration-300 transform font-semibold text-purple-300">Home</a>
+                    <a href="review.html" class="hover:text-white hover:scale-110 transition-all duration-300 transform">Review</a>
+                    <a href="about.html" class="hover:text-white hover:scale-110 transition-all duration-300 transform">About</a>
+                    <a href="mentorship.html" class="hover:text-white hover:scale-110 transition-all duration-300 transform">Mentorship</a>
+                </div>
+                <div class="text-sm text-gray-400">
+                    Powered by Gemini AI
+                </div>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>

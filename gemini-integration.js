@@ -205,12 +205,40 @@ Remember: Your goal is to help the user improve, NOT to make them feel good. Be 
         }
     }
 
-    // Helper method to calculate fallback score based on code complexity
+    // Helper method to calculate fallback score based on code complexity with more variation
     calculateFallbackScore(code) {
         const complexity = this.calculateCodeComplexity(code);
-        if (complexity > 50) return 3; // High complexity, low score
-        if (complexity > 20) return 5; // Medium complexity, average score
-        return 7; // Low complexity, high score
+        const lines = code.split('\n').filter(line => line.trim()).length;
+        const hasFunctions = code.includes('def ');
+        const hasClasses = code.includes('class ');
+        const hasImports = code.includes('import ');
+        const hasComments = code.includes('#');
+        
+        // Base score calculation with more factors
+        let score = 7; // Start with a decent score
+        
+        // Deduct for high complexity
+        if (complexity > 50) score -= 3;
+        else if (complexity > 30) score -= 2;
+        else if (complexity > 15) score -= 1;
+        
+        // Deduct for missing structure
+        if (!hasFunctions && lines > 10) score -= 1;
+        if (!hasImports && (hasFunctions || hasClasses)) score -= 1;
+        if (!hasComments && lines > 5) score -= 1;
+        
+        // Add points for good practices
+        if (hasFunctions && hasComments) score += 1;
+        if (hasImports && hasFunctions) score += 1;
+        
+        // Add some randomness to avoid constant scores
+        const randomFactor = Math.random() * 2 - 1; // -1 to +1
+        score += randomFactor;
+        
+        // Ensure score is within 1-10 range
+        score = Math.max(1, Math.min(10, Math.round(score)));
+        
+        return score;
     }
 
     // Helper method to calculate code complexity (simple heuristic)
@@ -228,34 +256,87 @@ Remember: Your goal is to help the user improve, NOT to make them feel good. Be 
         return complexity;
     }
 
-    // Helper method to generate fallback issues based on code complexity
+    // Helper method to generate fallback issues based on code complexity with more variety
     generateFallbackIssues(code) {
         const complexity = this.calculateCodeComplexity(code);
+        const lines = code.split('\n').filter(line => line.trim()).length;
+        const hasFunctions = code.includes('def ');
+        const hasClasses = code.includes('class ');
+        const hasImports = code.includes('import ');
+        const hasComments = code.includes('#');
+        const hasErrorHandling = code.includes('try') || code.includes('except');
+        
+        const issues = [];
+        
+        // Generate issues based on actual code analysis
         if (complexity > 50) {
-            return [
-                {
-                    type: "Efficiency",
-                    severity: "High",
-                    description: "High complexity code detected",
-                    problem: "The code may have performance issues due to high complexity",
-                    fix: "Consider refactoring the code to reduce complexity",
-                    lineNumbers: "Multiple lines"
-                }
-            ];
+            issues.push({
+                type: "Efficiency",
+                severity: "High",
+                description: "High complexity code detected",
+                problem: "The code may have performance issues due to high complexity and multiple nested structures",
+                fix: "Consider breaking down complex functions into smaller, more manageable pieces",
+                lineNumbers: "Multiple lines"
+            });
         }
-        if (complexity > 20) {
-            return [
-                {
-                    type: "Readability",
-                    severity: "Medium",
-                    description: "Code readability issues detected",
-                    problem: "The code may be hard to understand due to poor formatting",
-                    fix: "Review and apply consistent formatting following PEP8 guidelines",
-                    lineNumbers: "Multiple lines"
-                }
-            ];
+        
+        if (!hasFunctions && lines > 10) {
+            issues.push({
+                type: "Style",
+                severity: "Medium",
+                description: "Code lacks function structure",
+                problem: "Long scripts without functions are hard to maintain and test",
+                fix: "Organize your code into reusable functions with clear purposes",
+                lineNumbers: "Multiple lines"
+            });
         }
-        return [];
+        
+        if (!hasComments && lines > 5) {
+            issues.push({
+                type: "Readability",
+                severity: "Medium",
+                description: "Missing comments and documentation",
+                problem: "Code without comments is difficult for others (and your future self) to understand",
+                fix: "Add comments explaining the purpose of functions and complex logic",
+                lineNumbers: "Multiple lines"
+            });
+        }
+        
+        if (!hasErrorHandling && (hasFunctions || lines > 15)) {
+            issues.push({
+                type: "Bug",
+                severity: "Medium",
+                description: "Missing error handling",
+                problem: "Code without error handling can crash unexpectedly when encountering invalid inputs",
+                fix: "Add try/except blocks to handle potential errors gracefully",
+                lineNumbers: "Function definitions"
+            });
+        }
+        
+        if (!hasImports && (hasFunctions || hasClasses)) {
+            issues.push({
+                type: "Style",
+                severity: "Low",
+                description: "Consider adding imports for better functionality",
+                problem: "Your code might benefit from standard library modules",
+                fix: "Review if you need imports like 'os', 'sys', 'json', or other relevant modules",
+                lineNumbers: "Top of file"
+            });
+        }
+        
+        // If no specific issues found, provide general improvement suggestions
+        if (issues.length === 0) {
+            issues.push({
+                type: "Readability",
+                severity: "Low",
+                description: "Code could benefit from minor improvements",
+                problem: "There are always opportunities to make code more readable and maintainable",
+                fix: "Consider adding more descriptive variable names and comments",
+                lineNumbers: "Various"
+            });
+        }
+        
+        return issues;
     }
 
     // Helper method to get code quality from score
